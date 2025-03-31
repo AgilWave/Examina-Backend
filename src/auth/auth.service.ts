@@ -109,25 +109,33 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
       let user = await this.userService.findByEmail(emailStr);
 
       if (!user) {
-        user = await this.userService.create({
+        const createResponse = await this.userService.create({
           email,
           name: verifiedToken.name || 'User',
           microsoftId: verifiedToken.oid || verifiedToken.sub,
         });
+
+        if (!createResponse.isSuccessful || !createResponse.content) {
+          throw new UnauthorizedException('Failed to create user');
+        }
+
+        user = createResponse.content as any;
       }
 
       const payload = {
-        sub: user.id,
-        email: user.email,
-        name: user.name,
+        sub: user?.id,
+        email: user?.email,
+        name: user?.name,
       };
 
       return {
+        isSuccessful: true,
+        message: 'Login successful',
         token: this.jwtService.sign(payload),
         user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
+          id: user?.id,
+          email: user?.email,
+          name: user?.name,
         },
       };
     } catch (error) {

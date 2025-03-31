@@ -32,18 +32,42 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.userService.findById(id);
+    try {
+      return this.userService.findById(id);
+    } catch (error: unknown) {
+      return {
+        isSuccessful: false,
+        message: 'Error fetching user',
+        content: error instanceof Error ? error.message : String(error),
+      };
+    }
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(id, updateUserDto);
+    try {
+      return this.userService.update(id, updateUserDto);
+    } catch (error: unknown) {
+      return {
+        isSuccessful: false,
+        message: 'Error updating user',
+        content: error instanceof Error ? error.message : String(error),
+      };
+    }
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.userService.remove(id);
+    try {
+      return this.userService.remove(id);
+    } catch (error: unknown) {
+      return {
+        isSuccessful: false,
+        message: 'Error deleting user',
+        content: error instanceof Error ? error.message : String(error),
+      };
+    }
   }
 }
