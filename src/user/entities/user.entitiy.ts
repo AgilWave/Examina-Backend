@@ -38,6 +38,12 @@ export class User {
   @Column({ default: false })
   isBlacklisted: boolean;
 
+  @Column({ default: 0 })
+  failedLoginAttempts: number;
+
+  @Column({ type: 'timestamp', nullable: true })
+  lastFailedLoginAttempt: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 

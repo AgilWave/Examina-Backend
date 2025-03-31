@@ -137,6 +137,9 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
   }
 
   async adminUserNamePasswordLogin(username: string, password: string) {
+    const MAX_ATTEMPTS = 5;
+    const BLOCK_TIME = 10 * 60 * 1000;
+
     try {
       const user = await this.userService.findByUsername(username);
 
@@ -156,18 +159,46 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
         };
       }
 
+      const currentTime = Date.now();
+      if (user.failedLoginAttempts >= MAX_ATTEMPTS) {
+        const timeSinceLastAttempt =
+          currentTime - Number(user.lastFailedLoginAttempt || 0);
+
+        if (timeSinceLastAttempt < BLOCK_TIME) {
+          const remainingTimeInMinandSec = BLOCK_TIME - timeSinceLastAttempt;
+          const remainingTime = remainingTimeInMinandSec / 1000;
+          const minutes = Math.floor(remainingTime / 60);
+          const seconds = Math.floor(remainingTime % 60);
+          return {
+            isSuccessful: false,
+            message: `Too many login attempts. Try again in ${minutes} minutes and ${seconds} seconds.`,
+            content: null,
+          };
+        } else {
+          user.failedLoginAttempts = 0;
+        }
+      }
+
       const isPasswordValid = await this.userService.validatePassword(
         password,
         user.password,
       );
-
       if (!isPasswordValid) {
+        user.failedLoginAttempts += 1;
+        user.lastFailedLoginAttempt = new Date(currentTime);
+
+        await this.userService.update(user.id, user);
+
         return {
           isSuccessful: false,
           message: 'Username or password is incorrect',
           content: null,
         };
       }
+
+      user.failedLoginAttempts = 0;
+      user.lastFailedLoginAttempt = new Date(0);
+      await this.userService.update(user.id, user);
 
       const payload = {
         sub: user.id,
