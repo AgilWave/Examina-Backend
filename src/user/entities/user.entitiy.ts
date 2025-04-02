@@ -6,12 +6,10 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { v4 as uuidv4 } from 'uuid';
-
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn('uuid')
-  id: string = uuidv4();
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Column({ unique: true })
   email: string;
@@ -24,7 +22,7 @@ export class User {
 
   @Column({
     type: 'enum',
-    enum: ['student', 'lecturer', 'admin'],
+    enum: ['student', 'lecturer', 'admin', 'superAdmin'],
     default: 'student',
   })
   role: string;
@@ -38,15 +36,30 @@ export class User {
   @Column({ default: false })
   isBlacklisted: boolean;
 
+  @Column({ nullable: true })
+  blacklistedReason: string;
+
   @Column({ default: 0 })
   failedLoginAttempts: number;
 
   @Column({ type: 'timestamp', nullable: true })
   lastFailedLoginAttempt: Date;
 
+  @Column({ type: 'timestamp', nullable: true })
+  lastLogin: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 
+  @Column({ nullable: true })
+  createdBy: string;
+
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Column({ nullable: true })
+  updatedBy: string;
+
+  @Column({ default: true })
+  isFirstLogin: boolean;
 }

@@ -4,7 +4,6 @@ import {
   IsString,
   IsOptional,
   IsEnum,
-  MinLength,
 } from 'class-validator';
 
 export class CreateUserDto {
@@ -20,8 +19,8 @@ export class CreateUserDto {
   @IsOptional()
   microsoftId?: string;
 
-  @IsEnum(['student', 'lecturer', 'admin'], {
-    message: 'Role must be either student, lecturer, or admin',
+  @IsEnum(['student', 'lecturer', 'admin', 'superAdmin'], {
+    message: 'Role must be either student, lecturer, admin or supre admin',
   })
   @IsOptional()
   role?: string;
@@ -32,6 +31,5 @@ export class CreateUserDto {
 
   @IsString()
   @IsOptional()
-  @MinLength(6, { message: 'Password must be at least 6 characters' })
-  password?: string;
+  createdBy?: string;
 }

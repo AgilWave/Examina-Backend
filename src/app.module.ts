@@ -20,8 +20,7 @@ import { User } from './user/entities/user.entitiy';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       entities: [User],
-      synchronize: false,
-      migrations: ['dist/migrations/*.js'],
+      synchronize: true,
       extra: {
         ssl:
           process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,

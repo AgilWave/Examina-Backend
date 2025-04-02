@@ -110,11 +110,10 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
 
       if (!user) {
         const createResponse = await this.userService.create({
-          email,
-          name: verifiedToken.name || 'User',
-          microsoftId: verifiedToken.oid || verifiedToken.sub,
+          email: emailStr,
+          name: verifiedToken.name,
+          microsoftId: verifiedToken.sub,
         });
-
         if (!createResponse.isSuccessful || !createResponse.content) {
           throw new UnauthorizedException('Failed to create user');
         }
@@ -162,7 +161,7 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
       if (user.isBlacklisted) {
         return {
           isSuccessful: false,
-          message: 'User is blacklisted',
+          message: 'This Account is blacklisted, Please contact admin',
           content: null,
         };
       }
@@ -206,6 +205,19 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
 
       user.failedLoginAttempts = 0;
       user.lastFailedLoginAttempt = new Date(0);
+      user.lastLogin = new Date(currentTime);
+
+      const userDetails = {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        ...(user.isFirstLogin && { isFirstLogin: true }),
+      };
+
+      if (user.isFirstLogin) {
+        user.isFirstLogin = false;
+      }
+
       await this.userService.update(user.id, user);
 
       const payload = {
@@ -219,11 +231,7 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
         message: 'Login successful',
         content: {
           token: this.jwtService.sign(payload),
-          user: {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-          },
+          user: userDetails,
         },
       };
     } catch (error) {
