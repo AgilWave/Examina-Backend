@@ -30,9 +30,9 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  async onModuleInit() {}
+  async onModuleInit() { }
 
-  async onModuleDestroy() {}
+  async onModuleDestroy() { }
 
   /**
    * Blacklist a token permanently (in-memory)
@@ -162,6 +162,14 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
         return {
           isSuccessful: false,
           message: 'This Account is blacklisted, Please contact admin',
+          content: null,
+        };
+      }
+
+      if (user.role !== 'admin' && user.role !== 'superAdmin') {
+        return {
+          isSuccessful: false,
+          message: 'You are not authorized to login',
           content: null,
         };
       }
