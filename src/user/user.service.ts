@@ -5,7 +5,7 @@ import { User } from './entities/user.entitiy';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { BlackListUserDto } from './dto/blacklist-user.dto';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { UserFilterDto } from './dto/user-filter.dto';
 import { ResponseList } from '../response-dtos/responseList.dto';
 import { ResponseContent } from '../response-dtos/responseContent.dto';
