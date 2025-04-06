@@ -16,7 +16,7 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) { }
+  ) {}
 
   async create(
     createUserDto: CreateUserDto,
@@ -102,7 +102,6 @@ export class UserService {
         isBlacklisted: isBlacklistedBool,
       });
     }
-
 
     if (role) {
       query.andWhere('user.role = :role', { role });

@@ -30,9 +30,9 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  async onModuleInit() { }
+  async onModuleInit() {}
 
-  async onModuleDestroy() { }
+  async onModuleDestroy() {}
 
   /**
    * Blacklist a token permanently (in-memory)
