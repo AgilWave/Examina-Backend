@@ -6,7 +6,13 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { User } from './user/entities/user.entitiy';
-
+import { FacultyModule } from './faulty/faculty.module';
+import { CourseModule } from './course/course.module';
+import { BatchModule } from './batch/batch.module';
+import { Student } from './user/entities/student.entitiy';
+import { Faculty } from './faulty/entities/faculty.entitiy';
+import { Course } from './course/entities/course.entitiy';
+import { Batch } from './batch/entities/batch.entitiy';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -19,7 +25,7 @@ import { User } from './user/entities/user.entitiy';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [User],
+      entities: [User, Student, Faculty, Course, Batch],
       synchronize: true,
       extra: {
         ssl:
@@ -28,6 +34,9 @@ import { User } from './user/entities/user.entitiy';
     }),
     AuthModule,
     UserModule,
+    FacultyModule,
+    CourseModule,
+    BatchModule,
   ],
   controllers: [AppController],
   providers: [AppService],

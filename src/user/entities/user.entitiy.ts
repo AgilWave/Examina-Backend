@@ -4,7 +4,9 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToOne,
 } from 'typeorm';
+import { Student } from './student.entitiy';
 
 @Entity('users')
 export class User {
@@ -62,4 +64,7 @@ export class User {
 
   @Column({ default: true })
   isFirstLogin: boolean;
+
+  @OneToOne(() => Student, (student) => student.user)
+  student: Student;
 }

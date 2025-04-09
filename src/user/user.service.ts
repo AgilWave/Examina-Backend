@@ -10,12 +10,14 @@ import { UserFilterDto } from './dto/user-filter.dto';
 import { ResponseList } from '../response-dtos/responseList.dto';
 import { ResponseContent } from '../response-dtos/responseContent.dto';
 import { PaginationInfo } from 'src/response-dtos/pagination-response.dto';
-
+import { StudentService } from './student.service';
+import { UpdateStudentDto } from './dto/student.dto';
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly studentService: StudentService,
   ) {}
 
   async create(
@@ -63,6 +65,12 @@ export class UserService {
 
       const savedUser = await this.userRepository.save(newUser);
 
+      if (savedUser.role === 'student') {
+        await this.studentService.create({
+          userId: savedUser.id,
+        });
+      }
+
       return {
         isSuccessful: true,
         message: 'User created successfully',
@@ -88,7 +96,21 @@ export class UserService {
 
     const query = this.userRepository
       .createQueryBuilder('user')
-      .select(['user.id', 'user.email', 'user.name', 'user.isBlacklisted']);
+      .select([
+        'user.id',
+        'user.email',
+        'user.name',
+        'user.isBlacklisted',
+        'user.role',
+        'user.createdAt',
+      ]);
+
+    if (role === 'student') {
+      query
+        .leftJoin('user.student', 'student')
+        .leftJoin('student.batch', 'batch')
+        .addSelect(['student.id', 'batch.batchCode']);
+    }
 
     if (name) {
       query.andWhere('user.name ILIKE :name', { name: `%${name}%` });
@@ -130,6 +152,7 @@ export class UserService {
         listContent: [],
       };
     }
+
     const paginationInfo: PaginationInfo = {
       page,
       pageSize,
@@ -158,17 +181,17 @@ export class UserService {
         'user.id',
         'user.email',
         'user.name',
+        'user.role',
+        'user.username',
         'user.isBlacklisted',
         'user.blacklistedReason',
-        'user.role',
-        'user.microsoftId',
-        'user.username',
         'user.createdAt',
         'user.updatedAt',
         'user.createdBy',
         'user.updatedBy',
       ])
       .where('user.id = :id', { id });
+
     const user = await query.getOne();
 
     if (!user) {
@@ -176,6 +199,33 @@ export class UserService {
         isSuccessful: false,
         message: 'User not found',
         content: null,
+      };
+    }
+
+    if (user.role === 'student') {
+      const studentQuery = this.userRepository
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.student', 'student')
+        .select([
+          'user.id',
+          'user.email',
+          'user.name',
+          'user.isBlacklisted',
+          'user.blacklistedReason',
+          'user.createdAt',
+          'user.updatedAt',
+          'user.createdBy',
+          'user.updatedBy',
+          'student.facultyId',
+          'student.courseId',
+          'student.batchId',
+        ])
+        .where('user.id = :id', { id });
+
+      const studentUser = await studentQuery.getOne();
+      return {
+        isSuccessful: true,
+        content: studentUser,
       };
     }
 
@@ -199,7 +249,7 @@ export class UserService {
 
   async update(
     id: number,
-    updateUserDto: UpdateUserDto,
+    uddateDTO: UpdateUserDto | UpdateStudentDto,
     CurrentUser?: User,
   ): Promise<ResponseContent<User>> {
     const userResult = await this.findById(id);
@@ -211,27 +261,60 @@ export class UserService {
         content: null,
       };
     }
-    const updatedUser = Object.assign(userResult.content, updateUserDto);
 
-    if (CurrentUser) {
-      updatedUser.updatedBy = CurrentUser.username;
-    } else {
-      updatedUser.updatedBy = 'System';
-    }
-
-    const saveUser = await this.userRepository.save(updatedUser);
-    if (!saveUser) {
+    if (
+      'facultyId' in uddateDTO ||
+      'batchId' in uddateDTO ||
+      'courseId' in uddateDTO
+    ) {
+      const student = await this.studentService.findByUserId(id);
+      if (!student) {
+        return {
+          isSuccessful: false,
+          message: 'Student not found',
+          content: null,
+        };
+      }
+      const saveStudent = await this.studentService.update(
+        id,
+        uddateDTO,
+        CurrentUser,
+      );
+      if (!saveStudent.isSuccessful) {
+        return {
+          isSuccessful: false,
+          message: 'Error updating student',
+          content: null,
+        };
+      }
       return {
-        isSuccessful: false,
-        message: 'Error updating user',
+        isSuccessful: true,
+        message: 'Student updated successfully',
+        content: null,
+      };
+    } else {
+      const updatedUser = Object.assign(userResult.content, uddateDTO);
+
+      if (CurrentUser) {
+        updatedUser.updatedBy = CurrentUser.username;
+      } else {
+        updatedUser.updatedBy = 'System';
+      }
+
+      const saveUser = await this.userRepository.save(updatedUser);
+      if (!saveUser) {
+        return {
+          isSuccessful: false,
+          message: 'Error updating user',
+          content: null,
+        };
+      }
+      return {
+        isSuccessful: true,
+        message: 'User updated successfully',
         content: null,
       };
     }
-    return {
-      isSuccessful: true,
-      message: 'User updated successfully',
-      content: null,
-    };
   }
 
   async remove(

@@ -17,6 +17,7 @@ import { BlackListUserDto } from './dto/blacklist-user.dto';
 import { UserFilterDto } from './dto/user-filter.dto';
 import { User as CurrentUser } from './user.decorator';
 import { User } from './entities/user.entitiy';
+import { UpdateStudentDto } from './dto/student.dto';
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -62,7 +63,7 @@ export class UserController {
   @Patch('Interact/Update/:id')
   update(
     @Param('id') id: number,
-    @Body() updateUserDto: UpdateUserDto,
+    @Body() updateDTO: UpdateUserDto | UpdateStudentDto,
     @CurrentUser() currentUser: User,
   ) {
     try {
@@ -73,7 +74,7 @@ export class UserController {
           content: null,
         };
       }
-      return this.userService.update(id, updateUserDto, currentUser);
+      return this.userService.update(id, updateDTO, currentUser);
     } catch (error: unknown) {
       return {
         isSuccessful: false,
