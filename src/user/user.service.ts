@@ -104,7 +104,13 @@ export class UserService {
     }
 
     if (role) {
-      query.andWhere('user.role = :role', { role });
+      if (role === 'admin') {
+        query.andWhere('user.role IN (:...roles)', {
+          roles: ['super admin', 'admin'],
+        });
+      } else {
+        query.andWhere('user.role = :role', { role });
+      }
     }
 
     const totalItems = await query.getCount();
