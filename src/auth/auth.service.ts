@@ -121,6 +121,14 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
         user = createResponse.content as any;
       }
 
+      if (user?.isBlacklisted) {
+        return {
+          isSuccessful: false,
+          message: 'This Account is blacklisted, Please contact admin',
+          content: null,
+        };
+      }
+
       const payload = {
         sub: user?.id,
         email: user?.email,

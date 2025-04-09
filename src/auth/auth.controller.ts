@@ -22,7 +22,17 @@ export class AuthController {
         tokenDto.token,
       );
       if (result && 'token' in result && 'user' in result) {
-        return { jwt: result.token, user: result.user };
+        return {
+          isSuccessful: true,
+          message: 'Login successful',
+          content: { jwt: result.token, user: result.user },
+        };
+      } else if (result) {
+        return {
+          isSuccessful: false,
+          message: result.message || 'Invalid Microsoft token',
+          content: null,
+        };
       } else {
         throw new UnauthorizedException('Invalid result format');
       }
