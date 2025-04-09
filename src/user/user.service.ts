@@ -106,7 +106,7 @@ export class UserService {
     if (role) {
       if (role === 'admin') {
         query.andWhere('user.role IN (:...roles)', {
-          roles: ['super admin', 'admin'],
+          roles: ['superAdmin', 'admin'],
         });
       } else {
         query.andWhere('user.role = :role', { role });
