@@ -7,7 +7,7 @@ import {
   OneToOne,
 } from 'typeorm';
 import { Student } from './student.entitiy';
-
+import { Lecture } from './lecture.entitiy';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
@@ -67,4 +67,7 @@ export class User {
 
   @OneToOne(() => Student, (student) => student.user)
   student: Student;
+
+  @OneToOne(() => Lecture, (lecture) => lecture.user)
+  lecture: Lecture;
 }

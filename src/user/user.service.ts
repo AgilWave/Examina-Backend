@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -10,14 +11,17 @@ import { UserFilterDto } from './dto/user-filter.dto';
 import { ResponseList } from '../response-dtos/responseList.dto';
 import { ResponseContent } from '../response-dtos/responseContent.dto';
 import { PaginationInfo } from 'src/response-dtos/pagination-response.dto';
+import { UpdateLectureDto } from './dto/lecure.dto';
 import { StudentService } from './student.service';
 import { UpdateStudentDto } from './dto/student.dto';
+import { LectureService } from './lecture.service';
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly studentService: StudentService,
+    private readonly lectureService: LectureService,
   ) {}
 
   async create(
@@ -69,6 +73,10 @@ export class UserService {
         await this.studentService.create({
           userId: savedUser.id,
         });
+      } else if (savedUser.role === 'lecturer') {
+        await this.lectureService.create({
+          userId: savedUser.id,
+        });
       }
 
       return {
@@ -110,6 +118,8 @@ export class UserService {
         .leftJoin('user.student', 'student')
         .leftJoin('student.batch', 'batch')
         .addSelect(['student.id', 'batch.batchCode']);
+    } else if (role === 'lecturer') {
+      query.leftJoin('user.lecture', 'lecture').addSelect(['lecture.id']);
     }
 
     if (name) {
@@ -203,32 +213,79 @@ export class UserService {
     }
 
     if (user.role === 'student') {
-      const studentQuery = this.userRepository
-        .createQueryBuilder('user')
-        .leftJoinAndSelect('user.student', 'student')
-        .select([
-          'user.id',
-          'user.email',
-          'user.name',
-          'user.isBlacklisted',
-          'user.blacklistedReason',
-          'user.createdAt',
-          'user.updatedAt',
-          'user.createdBy',
-          'user.updatedBy',
-          'student.facultyId',
-          'student.courseId',
-          'student.batchId',
-        ])
-        .where('user.id = :id', { id });
+      const studentUser = await this.userRepository.findOne({
+        where: { id },
+        relations: {
+          student: {
+            faculty: true,
+            course: true,
+            batch: true,
+          },
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          isBlacklisted: true,
+          blacklistedReason: true,
+          createdAt: true,
+          updatedAt: true,
+          createdBy: true,
+          updatedBy: true,
+          student: {
+            id: true,
+            faculty: {
+              id: true,
+              name: true,
+            },
+            course: {
+              id: true,
+              name: true,
+            },
+            batch: {
+              id: true,
+              batchCode: true,
+            },
+          },
+        },
+      });
 
-      const studentUser = await studentQuery.getOne();
       return {
         isSuccessful: true,
         content: studentUser,
       };
-    }
+    } else if (user.role === 'lecturer') {
+      const lectureUser = await this.userRepository.findOne({
+        where: { id },
+        relations: {
+          lecture: {
+            faculties: true,
+            courses: true,
+          },
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          isBlacklisted: true,
+          blacklistedReason: true,
+          createdAt: true,
+          updatedAt: true,
+          createdBy: true,
+          updatedBy: true,
+          lecture: {
+            id: true,
+            faculties: true,
+            courses: true,
+          },
+        },
+      });
 
+      return {
+        isSuccessful: true,
+        content: lectureUser,
+      };
+    }
     return {
       isSuccessful: true,
       content: user,
@@ -249,7 +306,7 @@ export class UserService {
 
   async update(
     id: number,
-    uddateDTO: UpdateUserDto | UpdateStudentDto,
+    uddateDTO: UpdateUserDto | UpdateStudentDto | UpdateLectureDto,
     CurrentUser?: User,
   ): Promise<ResponseContent<User>> {
     const userResult = await this.findById(id);
@@ -262,7 +319,33 @@ export class UserService {
       };
     }
 
-    if (
+    if ('facultyIds' in uddateDTO || 'courseIds' in uddateDTO) {
+      const lecture = await this.lectureService.findByUserId(id);
+      if (!lecture) {
+        return {
+          isSuccessful: false,
+          message: 'Lecture not found',
+          content: null,
+        };
+      }
+      const saveLecture = await this.lectureService.update(
+        id,
+        uddateDTO,
+        CurrentUser,
+      );
+      if (!saveLecture.isSuccessful) {
+        return {
+          isSuccessful: false,
+          message: 'Error updating lecture',
+          content: null,
+        };
+      }
+      return {
+        isSuccessful: true,
+        message: 'Lecture updated successfully',
+        content: null,
+      };
+    } else if (
       'facultyId' in uddateDTO ||
       'batchId' in uddateDTO ||
       'courseId' in uddateDTO

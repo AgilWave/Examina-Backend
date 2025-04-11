@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Student } from '../../user/entities/student.entitiy';
-
+import { Lecture } from '../../user/entities/lecture.entitiy';
 @Entity('faculties')
 export class Faculty {
   @PrimaryGeneratedColumn()
@@ -28,7 +28,9 @@ export class Faculty {
   })
   updatedAt: Date;
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   @OneToMany(() => Student, (student) => student.faculty)
   students: Student[];
+
+  @OneToMany(() => Lecture, (lecture) => lecture.faculties)
+  lectures: Lecture[];
 }

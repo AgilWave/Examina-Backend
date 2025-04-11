@@ -13,6 +13,7 @@ import { Student } from './user/entities/student.entitiy';
 import { Faculty } from './faulty/entities/faculty.entitiy';
 import { Course } from './course/entities/course.entitiy';
 import { Batch } from './batch/entities/batch.entitiy';
+import { Lecture } from './user/entities/lecture.entitiy';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -25,7 +26,7 @@ import { Batch } from './batch/entities/batch.entitiy';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [User, Student, Faculty, Course, Batch],
+      entities: [User, Student, Faculty, Course, Batch, Lecture],
       synchronize: true,
       extra: {
         ssl:
