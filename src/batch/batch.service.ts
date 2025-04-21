@@ -12,7 +12,7 @@ export class BatchService {
   constructor(
     @InjectRepository(Batch)
     private readonly batchRepository: Repository<Batch>,
-    @InjectRepository(Course) // Inject Course repository
+    @InjectRepository(Course) 
     private readonly courseRepository: Repository<Course>,
   ) {}
 
@@ -47,20 +47,16 @@ export class BatchService {
     const batches = await query.getMany();
     
     if (batches.length > 0) {
-      // Get unique course IDs from batches
       const courseIds = [...new Set(batches.map(batch => batch.courseId))];
       
-      // Use courseRepository to fetch course data
       const courses = await this.courseRepository
         .createQueryBuilder('course')
-        .select(['course.id', 'course.name']) // Assuming the name field is 'name'
+        .select(['course.id', 'course.name']) 
         .where('course.id IN (:...courseIds)', { courseIds })
         .getMany();
         
-      // Create a map of course ID to course name
       const courseMap = new Map(courses.map(course => [course.id, course.name]));
       
-      // Add course name to each batch
       batches.forEach(batch => {
         batch.courseName = courseMap.get(batch.courseId) || '';
       });
