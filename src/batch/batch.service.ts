@@ -2,14 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Batch } from './entities/batch.entitiy';
+import { Course } from '../course/entities/course.entitiy'; 
 import { ResponseList } from 'src/response-dtos/responseList.dto';
 import { PaginationInfo } from 'src/response-dtos/pagination-response.dto';
 import { BatchFilterDto } from './dto/filter.dto';
+
 @Injectable()
 export class BatchService {
   constructor(
     @InjectRepository(Batch)
     private readonly batchRepository: Repository<Batch>,
+    @InjectRepository(Course) // Inject Course repository
+    private readonly courseRepository: Repository<Course>,
   ) {}
 
   async findById(id: number): Promise<Batch | null> {
@@ -41,6 +45,26 @@ export class BatchService {
       .orderBy('batch.createdAt', 'DESC');
 
     const batches = await query.getMany();
+    
+    if (batches.length > 0) {
+      // Get unique course IDs from batches
+      const courseIds = [...new Set(batches.map(batch => batch.courseId))];
+      
+      // Use courseRepository to fetch course data
+      const courses = await this.courseRepository
+        .createQueryBuilder('course')
+        .select(['course.id', 'course.name']) // Assuming the name field is 'name'
+        .where('course.id IN (:...courseIds)', { courseIds })
+        .getMany();
+        
+      // Create a map of course ID to course name
+      const courseMap = new Map(courses.map(course => [course.id, course.name]));
+      
+      // Add course name to each batch
+      batches.forEach(batch => {
+        batch.courseName = courseMap.get(batch.courseId) || '';
+      });
+    }
 
     if (batches.length === 0) {
       return {
