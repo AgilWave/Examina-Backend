@@ -3,6 +3,7 @@ import {
   Get,
   Param,
   Body,
+  Post,
   UseGuards,
   Query,
   Patch,
@@ -10,7 +11,7 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { BatchService } from './batch.service';
 import { BatchFilterDto } from './dto/filter.dto';
-import { UpdateBatchDTO } from './dto/batch.dto';
+import { UpdateBatchDTO, CreateBatchDTO } from './dto/batch.dto';
 import { User as CurrentUser } from '../user/user.decorator';
 import { User } from '../user/entities/user.entitiy';
 
@@ -41,6 +42,23 @@ export class BatchController {
       return {
         isSuccessful: false,
         message: 'Error fetching Batch',
+        content: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('Interact')
+  async createBatch(
+    @Body() createBatchDto: CreateBatchDTO,
+    @CurrentUser() currentUser: User,
+  ) {
+    try {
+      return this.batchService.create(createBatchDto, currentUser);
+    } catch (error: unknown) {
+      return {
+        isSuccessful: false,
+        message: 'Error creating Batch',
         content: error instanceof Error ? error.message : String(error),
       };
     }
