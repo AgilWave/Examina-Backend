@@ -7,6 +7,8 @@ import { ResponseList } from 'src/response-dtos/responseList.dto';
 import { ResponseContent } from '../response-dtos/responseContent.dto';
 import { PaginationInfo } from 'src/response-dtos/pagination-response.dto';
 import { BatchFilterDto } from './dto/filter.dto';
+import { UpdateBatchDTO, CreateBatchDTO } from './dto/batch.dto';
+import { User } from '../user/entities/user.entitiy';
 
 @Injectable()
 export class BatchService {
@@ -16,6 +18,27 @@ export class BatchService {
     @InjectRepository(Course)
     private readonly courseRepository: Repository<Course>,
   ) {}
+
+  async create(
+    createBatchDto: CreateBatchDTO,
+    currentUser?: User,
+  ): Promise<ResponseContent<Batch>> {
+    const newBatch = this.batchRepository.create(createBatchDto);
+
+    if (currentUser) {
+      newBatch.createdBy = currentUser.username;
+    } else {
+      newBatch.createdBy = 'System';
+    }
+
+    const savedBatch = await this.batchRepository.save(newBatch);
+
+    return {
+      isSuccessful: true,
+      message: 'Batch created successfully',
+      content: savedBatch,
+    };
+  }
 
   async findById(id: number): Promise<ResponseContent<Batch>> {
     const batch = await this.batchRepository.findOne({
@@ -103,6 +126,40 @@ export class BatchService {
       message: 'Batches found',
       listContent: batches,
       paginationInfo,
+    };
+  }
+
+  async update(
+    id: number,
+    updateBatchDto: UpdateBatchDTO,
+    currentUser?: User,
+  ): Promise<ResponseContent<Batch>> {
+    const batch = await this.batchRepository.findOne({
+      where: { id },
+    });
+
+    if (!batch) {
+      return {
+        isSuccessful: false,
+        message: 'Batch not found',
+        content: null,
+      };
+    }
+
+    const updatedBatch = Object.assign(batch, updateBatchDto);
+
+    if (currentUser) {
+      updatedBatch.updatedBy = currentUser.username;
+    } else {
+      updatedBatch.updatedBy = 'System';
+    }
+
+    const savedBatch = await this.batchRepository.save(updatedBatch);
+
+    return {
+      isSuccessful: true,
+      message: 'Batch updated successfully',
+      content: savedBatch,
     };
   }
 }
