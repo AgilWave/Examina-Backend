@@ -1,23 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Course } from './entities/course.entitiy';
 import { ResponseList } from 'src/response-dtos/responseList.dto';
 import { ResponseContent } from '../response-dtos/responseContent.dto';
 import { PaginationInfo } from 'src/response-dtos/pagination-response.dto';
 import { CourseFilterDto } from './dto/filter.dto';
-import { Faculty } from '../faulty/entities/faculty.entitiy';
-import { CreateCourseDTO, UpdateCourseDTO  } from './dto/course.dto';
+import { Modules } from '../modules/entities/modules.entitiy';
+import { CreateCourseDTO, UpdateCourseDTO } from './dto/course.dto';
 import { User } from '../user/entities/user.entitiy';
-
 
 @Injectable()
 export class CourseService {
   constructor(
     @InjectRepository(Course)
     private readonly courseRepository: Repository<Course>,
-    @InjectRepository(Faculty)
-    private readonly facultyRepository: Repository<Faculty>,
+    @InjectRepository(Modules)
+    private readonly moduleRepository: Repository<Modules>,
   ) {}
 
   async create(
@@ -37,6 +36,23 @@ export class CourseService {
     }
 
     const newCourse = this.courseRepository.create(createCourseDto);
+
+    if (createCourseDto.moduleIds?.length > 0) {
+      console.log(
+        'Module IDs provided for course creation:',
+        createCourseDto.moduleIds,
+      );
+      const modules = await this.moduleRepository.find({
+        where: { id: In(createCourseDto.moduleIds) },
+      });
+
+      console.log(
+        'Modules found for course creation:',
+        modules.map((module) => module.name),
+      );
+
+      newCourse.modules = modules;
+    }
 
     if (currentUser) {
       newCourse.createdBy = currentUser.username;
@@ -74,8 +90,10 @@ export class CourseService {
   }
 
   async findAll(filterDto: CourseFilterDto): Promise<ResponseList<Course>> {
-    const { page = 1, pageSize = 10, name, isActive, facultyId } = filterDto;
-    const query = this.courseRepository.createQueryBuilder('course');
+    const { page = 1, pageSize = 10, name, isActive } = filterDto;
+    const query = this.courseRepository.createQueryBuilder('course')
+      .leftJoinAndSelect('course.modules', 'module')
+      .select(['course', 'module.id', 'module.name']);
 
     if (name) {
       query.andWhere('course.name ILIKE :name', { name: `%${name}%` });
@@ -83,10 +101,6 @@ export class CourseService {
 
     if (isActive !== undefined) {
       query.andWhere('course.isActive = :isActive', { isActive });
-    }
-
-    if (facultyId) {
-      query.andWhere('course.facultyId = :facultyId', { facultyId });
     }
 
     const totalItems = await query.getCount();
@@ -98,25 +112,6 @@ export class CourseService {
       .orderBy('course.createdAt', 'DESC');
 
     const courses = await query.getMany();
-
-    if (courses.length > 0) {
-      const facultyIds = [
-        ...new Set(courses.map((course) => course.facultyId)),
-      ];
-
-      const faculties = await this.facultyRepository
-        .createQueryBuilder('faculty')
-        .select(['faculty.id', 'faculty.name'])
-        .where('faculty.id IN (:...facultyIds)', { facultyIds })
-        .getMany();
-      
-      const facultyMap = new Map(
-        faculties.map((faculty) => [faculty.id, faculty.name]),
-      );
-      courses.forEach((course) => {
-        course.facultyName = facultyMap.get(course.facultyId) ?? '';
-      });
-    }
 
     if (courses.length === 0) {
       return {
@@ -161,6 +156,14 @@ export class CourseService {
     }
 
     Object.assign(course, updateDTO);
+
+    if (updateDTO.moduleIds?.length > 0) {
+      const modules = await this.moduleRepository.find({
+        where: { id: In(updateDTO.moduleIds) },
+      });
+
+      course.modules = modules;
+    }
 
     if (currentUser) {
       course.updatedBy = currentUser.username;

@@ -9,11 +9,13 @@ import { User } from './user/entities/user.entitiy';
 import { FacultyModule } from './faulty/faculty.module';
 import { CourseModule } from './course/course.module';
 import { BatchModule } from './batch/batch.module';
+import { ModulesModule } from './modules/modules.module';
 import { Student } from './user/entities/student.entitiy';
 import { Faculty } from './faulty/entities/faculty.entitiy';
 import { Course } from './course/entities/course.entitiy';
 import { Batch } from './batch/entities/batch.entitiy';
 import { Lecture } from './user/entities/lecture.entitiy';
+import { Modules } from './modules/entities/modules.entitiy';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -26,7 +28,7 @@ import { Lecture } from './user/entities/lecture.entitiy';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [User, Student, Faculty, Course, Batch, Lecture],
+      entities: [User, Student, Faculty, Course, Batch, Lecture, Modules],
       synchronize: true,
       extra: {
         ssl:
@@ -38,6 +40,7 @@ import { Lecture } from './user/entities/lecture.entitiy';
     FacultyModule,
     CourseModule,
     BatchModule,
+    ModulesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

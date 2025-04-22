@@ -3,10 +3,11 @@ import {
   PrimaryGeneratedColumn,
   Column,
   OneToMany,
-  ManyToOne,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { Student } from '../../user/entities/student.entitiy';
-import { Faculty } from '../../faulty/entities/faculty.entitiy';
+import { Modules } from '../../modules/entities/modules.entitiy';
 import { Lecture } from '../../user/entities/lecture.entitiy';
 
 @Entity('courses')
@@ -16,15 +17,6 @@ export class Course {
 
   @Column()
   name: string;
-
-  @ManyToOne(() => Faculty, { nullable: true })
-  faculty: Faculty;
-
-  @Column({ nullable: true })
-  facultyId: number;
-  
-  @Column({ nullable: true })
-  facultyName: string
 
   @Column({ default: true })
   isActive: boolean;
@@ -50,4 +42,8 @@ export class Course {
 
   @OneToMany(() => Lecture, (lecture) => lecture.courses)
   lectures: Lecture[];
+
+  @ManyToMany(() => Modules, (module) => module.courses)
+  @JoinTable({ name: 'course_modules' })
+  modules: Modules[];
 }
