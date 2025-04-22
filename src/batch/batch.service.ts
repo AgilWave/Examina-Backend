@@ -77,7 +77,7 @@ export class BatchService {
     const query = this.batchRepository.createQueryBuilder('batch');
 
     if (name) {
-      query.andWhere('batch.name ILIKE :name', { name: `%${name}%` });
+      query.andWhere('batch.batchCode ILIKE :name', { name: `%${name}%` });
     }
 
     if (isActive !== undefined) {

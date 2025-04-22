@@ -47,7 +47,6 @@ export class Batch {
   })
   updatedAt: Date;
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   @OneToMany(() => Student, (student) => student.batch)
   students: Student[];
 }
