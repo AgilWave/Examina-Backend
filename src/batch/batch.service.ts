@@ -174,4 +174,38 @@ export class BatchService {
       content: savedBatch,
     };
   }
+
+  async updateStatus(
+    id: number,
+    isActive: boolean,
+    currentUser?: User,
+  ): Promise<ResponseContent<Batch>> {
+    const batch = await this.batchRepository.findOne({
+      where: { id },
+    });
+
+    if (!batch) {
+      return {
+        isSuccessful: false,
+        message: 'Batch not found',
+        content: null,
+      };
+    }
+
+    batch.isActive = isActive;
+
+    if (currentUser) {
+      batch.updatedBy = currentUser.username;
+    } else {
+      batch.updatedBy = 'System';
+    }
+
+    const updatedBatch = await this.batchRepository.save(batch);
+
+    return {
+      isSuccessful: true,
+      message: `Batch ${isActive ? 'activated' : 'deactivated'} successfully`,
+      content: updatedBatch,
+    };
+  }
 }

@@ -81,4 +81,22 @@ export class BatchController {
       };
     }
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('Interact/Update/:id/Status')
+  async updateBatchStatus(
+    @Param('id') id: number,
+    @Body() updateDTO: { status: boolean },
+    @CurrentUser() currentUser: User,
+  ) {
+    try {
+      return this.batchService.updateStatus(id, updateDTO.status, currentUser);
+    } catch (error: unknown) {
+      return {
+        isSuccessful: false,
+        message: 'Error updating Batch Status',
+        content: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
 }

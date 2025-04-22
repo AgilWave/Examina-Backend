@@ -1,4 +1,4 @@
-import { IsNumber, IsString } from 'class-validator';
+import { IsNumber, IsString, IsBoolean } from 'class-validator';
 
 export class CreateBatchDTO {
   @IsString()
@@ -20,4 +20,7 @@ export class UpdateBatchDTO {
 
   @IsNumber()
   courseId: number;
+
+  @IsBoolean()
+  isActive: boolean;
 }

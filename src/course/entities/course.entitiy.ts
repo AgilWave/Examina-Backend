@@ -22,6 +22,9 @@ export class Course {
 
   @Column({ nullable: true })
   facultyId: number;
+  
+  @Column({ nullable: true })
+  facultyName: string
 
   @Column({ default: true })
   isActive: boolean;
