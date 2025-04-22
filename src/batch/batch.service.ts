@@ -23,6 +23,18 @@ export class BatchService {
     createBatchDto: CreateBatchDTO,
     currentUser?: User,
   ): Promise<ResponseContent<Batch>> {
+    const existingBatch = await this.batchRepository.findOne({
+      where: { batchCode: createBatchDto.batchCode },
+    });
+
+    if (existingBatch) {
+      return {
+        isSuccessful: false,
+        message: 'Batch code already exists',
+        content: null,
+      };
+    }
+
     const newBatch = this.batchRepository.create(createBatchDto);
 
     if (currentUser) {

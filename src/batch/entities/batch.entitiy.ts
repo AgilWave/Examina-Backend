@@ -25,7 +25,6 @@ export class Batch {
   @Column({ nullable: true })
   courseId: number;
 
-  // courseName
   @Column({ nullable: true })
   courseName: string;
 
