@@ -70,9 +70,13 @@ export class CourseService {
   }
 
   async findById(id: number): Promise<ResponseContent<Course>> {
-    const course = await this.courseRepository.findOne({
-      where: { id },
-    });
+    const selectquery = this.courseRepository
+      .createQueryBuilder('course')
+      .leftJoinAndSelect('course.modules', 'module')
+      .where('course.id = :id', { id })
+      .select(['course', 'module.id', 'module.name']);
+
+    const course = await selectquery.getOne();
 
     if (!course) {
       return {
