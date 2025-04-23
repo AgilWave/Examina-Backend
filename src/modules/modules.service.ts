@@ -174,12 +174,12 @@ export class ModulesService {
       module.updatedBy = 'System';
     }
 
-    const updatedBatch = await this.moduleRepository.save(module);
+    const updatedmodule = await this.moduleRepository.save(module);
 
     return {
       isSuccessful: true,
       message: `Module ${isActive ? 'activated' : 'deactivated'} successfully`,
-      content: updatedBatch,
+      content: updatedmodule,
     };
   }
 }
