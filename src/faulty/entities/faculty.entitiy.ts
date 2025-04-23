@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Student } from '../../user/entities/student.entitiy';
 import { Lecture } from '../../user/entities/lecture.entitiy';
+import { Modules } from '../../modules/entities/modules.entitiy';
 @Entity('faculties')
 export class Faculty {
   @PrimaryGeneratedColumn()
@@ -33,4 +34,7 @@ export class Faculty {
 
   @OneToMany(() => Lecture, (lecture) => lecture.faculties)
   lectures: Lecture[];
+
+  @OneToMany(() => Modules, (module) => module.faculties)
+  modules: Modules[];
 }

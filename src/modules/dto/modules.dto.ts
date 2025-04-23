@@ -1,8 +1,11 @@
-import { IsString, IsBoolean, IsOptional } from 'class-validator';
+import { IsString, IsBoolean, IsOptional, IsNumber } from 'class-validator';
 
 export class CreateModulesDTO {
   @IsString()
   name: string;
+
+  @IsNumber()
+  facultyId: number;
 
   @IsString()
   @IsOptional()
@@ -12,6 +15,9 @@ export class CreateModulesDTO {
 export class UpdateModulesDTO {
   @IsString()
   name: string;
+
+  @IsNumber()
+  facultyId: number;
 
   @IsBoolean()
   isActive: boolean;
