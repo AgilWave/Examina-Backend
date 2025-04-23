@@ -21,7 +21,7 @@ export class ModuleController {
 
   @UseGuards(JwtAuthGuard)
   @Get('Search')
-  getAllBatches(@Query() filterDto: ModuleFilterDTO) {
+  getAllModules(@Query() filterDto: ModuleFilterDTO) {
     try {
       return this.moduleService.findAll(filterDto);
     } catch (error: unknown) {

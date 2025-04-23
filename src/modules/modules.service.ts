@@ -73,11 +73,11 @@ export class ModulesService {
     const query = this.moduleRepository.createQueryBuilder('module');
 
     if (name) {
-      query.andWhere('batch.batchCode ILIKE :name', { name: `%${name}%` });
+      query.andWhere('module.name ILIKE :name', { name: `%${name}%` });
     }
 
     if (isActive !== undefined) {
-      query.andWhere('batch.isActive = :isActive', { isActive });
+      query.andWhere('module.isActive = :isActive', { isActive });
     }
 
     const totalItems = await query.getCount();
@@ -86,7 +86,7 @@ export class ModulesService {
     query
       .skip((page - 1) * pageSize)
       .take(pageSize)
-      .orderBy('batch.createdAt', 'DESC');
+      .orderBy('module.createdAt', 'DESC');
 
     const modules = await query.getMany();
 
