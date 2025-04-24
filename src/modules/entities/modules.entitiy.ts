@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { Course } from '../../course/entities/course.entitiy';
 import { Faculty } from 'src/faulty/entities/faculty.entitiy';
 
@@ -36,6 +36,7 @@ export class Modules {
   @ManyToMany(() => Course, (course) => course.modules)
   courses: Course[];
 
-  @ManyToMany(() => Faculty, (faculty) => faculty.modules)
-  faculties: Faculty[];
+  @ManyToOne(() => Faculty, faculty => faculty.modules)
+  @JoinColumn({ name: 'facultyId' }) 
+  faculty: Faculty;
 }

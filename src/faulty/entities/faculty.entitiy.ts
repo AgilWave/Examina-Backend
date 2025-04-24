@@ -35,6 +35,6 @@ export class Faculty {
   @OneToMany(() => Lecture, (lecture) => lecture.faculties)
   lectures: Lecture[];
 
-  @OneToMany(() => Modules, (module) => module.faculties)
+  @OneToMany(() => Modules, (module) => module.faculty)
   modules: Modules[];
 }

@@ -68,9 +68,15 @@ export class ModulesService {
     };
   }
 
-  async findAll(filterDto: ModuleFilterDTO): Promise<ResponseList<Modules>> {
+ async findAll(filterDto: ModuleFilterDTO): Promise<ResponseList<Modules>> {
     const { page = 1, pageSize = 10, name, isActive, facultyId } = filterDto;
-    const query = this.moduleRepository.createQueryBuilder('module');
+    const query = this.moduleRepository
+      .createQueryBuilder('module')
+      .leftJoinAndSelect('module.faculty', 'faculty') 
+      .select([
+        'module',
+        'faculty.name'
+      ]);
 
     if (name) {
       query.andWhere('module.name ILIKE :name', { name: `%${name}%` });
