@@ -74,13 +74,13 @@ export class FacultyController {
   @Patch('Interact/Update/:id/Status')
   async updateBatchStatus(
     @Param('id') id: number,
-    @Body() updateDTO: { status: boolean },
+    @Body() updateDTO: { isActive: boolean },
     @CurrentUser() currentUser: User,
   ) {
     try {
       return this.facultyService.updateStatus(
         id,
-        updateDTO.status,
+        updateDTO.isActive,
         currentUser,
       );
     } catch (error: unknown) {

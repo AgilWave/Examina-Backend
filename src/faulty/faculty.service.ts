@@ -169,9 +169,16 @@ export class FacultyService {
             content: null,
           };
         }
-    
-        faculty.isActive = isActive;
-    
+
+        // Check if the status is already the same
+        if (faculty.isActive === isActive) {
+          return {
+            isSuccessful: false,
+            message: `Faculty is already ${isActive ? 'active' : 'inactive'}`,
+            content: null,
+          };
+        }
+        
         if (currentUser) {
           faculty.updatedBy = currentUser.username;
         } else {
@@ -183,7 +190,7 @@ export class FacultyService {
         return {
           isSuccessful: true,
           message: `Faculty ${isActive ? 'activated' : 'deactivated'} successfully`,
-          content: updatedfaculty,
+          content: null,
         };
       }
   
