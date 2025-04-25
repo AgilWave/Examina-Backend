@@ -49,9 +49,25 @@ export class FacultyService {
     };
   }
 
-  async findById(id: number): Promise<Faculty | null> {
-    return await this.facultyRepository.findOne({ where: { id } });
-  }
+  async findById(id: number): Promise<ResponseContent<Faculty>> {
+      const faculty = await this.facultyRepository.findOne({
+        where: { id },
+      });
+  
+      if (!faculty) {
+        return {
+          isSuccessful: false,
+          message: 'Faculty not found',
+          content: null,
+        };
+      }
+  
+      return {
+        isSuccessful: true,
+        message: 'Faculty found',
+        content: faculty,
+      };
+    }
 
   async findAll(filterDto: FacultyFilterDto): Promise<ResponseList<Faculty>> {
     const { page = 1, pageSize = 10, name, isActive } = filterDto;
