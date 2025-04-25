@@ -1,7 +1,19 @@
-import { Controller, Get, Param, UseGuards, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+  Query,
+  Body,
+  Patch,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FacultyService } from './faculty.service';
 import { FacultyFilterDto } from './dto/filter.dto';
+import { CreateFacultyDTO, UpdateFacultyDTO } from './dto/faculty.dto';
+import { User as CurrentUser } from '../user/user.decorator';
+import { User } from '../user/entities/user.entitiy';
 
 @Controller('faculty')
 export class FacultyController {
@@ -34,4 +46,57 @@ export class FacultyController {
       };
     }
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('Interact')
+  async createBatch(
+    @Body() createFacultydTO: CreateFacultyDTO,
+    @CurrentUser() currentUser: User,
+  ) {
+    try {
+      return this.facultyService.create(createFacultydTO, currentUser);
+    } catch (error: unknown) {
+      return {
+        isSuccessful: false,
+        message: 'Error creating Faculty',
+        content: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
+
+   @UseGuards(JwtAuthGuard)
+    @Patch('Interact/Update/:id')
+    async updateBatch(
+      @Param('id') id: number,
+      @Body() updateDTO: UpdateFacultyDTO,
+      @CurrentUser() currentUser: User,
+    ) {
+      try {
+        return this.facultyService.update(id, updateDTO, currentUser);
+      } catch (error: unknown) {
+        return {
+          isSuccessful: false,
+          message: 'Error updating Faculty',
+          content: error instanceof Error ? error.message : String(error),
+        };
+      }
+    }
+  
+    @UseGuards(JwtAuthGuard)
+    @Patch('Interact/Update/:id/Status')
+    async updateBatchStatus(
+      @Param('id') id: number,
+      @Body() updateDTO: { status: boolean },
+      @CurrentUser() currentUser: User,
+    ) {
+      try {
+        return this.facultyService.updateStatus(id, updateDTO.status, currentUser);
+      } catch (error: unknown) {
+        return {
+          isSuccessful: false,
+          message: 'Error updating Faculty Status',
+          content: error instanceof Error ? error.message : String(error),
+        };
+      }
+    }
 }
