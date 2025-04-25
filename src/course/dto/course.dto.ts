@@ -1,8 +1,12 @@
-import { IsBoolean, IsArray, IsString, IsInt, IsOptional } from 'class-validator';
+import { IsBoolean, IsArray, IsString, IsInt, IsOptional, IsNumber } from 'class-validator';
 
 export class CreateCourseDTO {
   @IsString()
   name: string;
+
+  @IsNumber()
+  @IsInt()
+  facultyId: number;
 
   @IsArray()
   @IsInt({ each: true })
@@ -18,6 +22,10 @@ export class UpdateCourseDTO {
   @IsString()
   name: string;
 
+  @IsNumber()
+  @IsInt()
+  facultyId: number;
+  
   @IsArray()
   @IsInt({ each: true })
   moduleIds: number[];

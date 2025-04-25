@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Student } from '../../user/entities/student.entitiy';
 import { Lecture } from '../../user/entities/lecture.entitiy';
 import { Modules } from '../../modules/entities/modules.entitiy';
+import { Course } from '../../course/entities/course.entitiy';
 @Entity('faculties')
 export class Faculty {
   @PrimaryGeneratedColumn()
@@ -28,6 +29,9 @@ export class Faculty {
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
+
+  @OneToMany(() => Course, (course) => course.faculty)
+  courses: Course[];
 
   @OneToMany(() => Student, (student) => student.faculty)
   students: Student[];

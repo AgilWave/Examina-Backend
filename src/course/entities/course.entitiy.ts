@@ -5,10 +5,12 @@ import {
   OneToMany,
   ManyToMany,
   JoinTable,
+  ManyToOne,
 } from 'typeorm';
 import { Student } from '../../user/entities/student.entitiy';
 import { Modules } from '../../modules/entities/modules.entitiy';
 import { Lecture } from '../../user/entities/lecture.entitiy';
+import { Faculty } from 'src/faulty/entities/faculty.entitiy';
 
 @Entity('courses')
 export class Course {
@@ -17,6 +19,9 @@ export class Course {
 
   @Column()
   name: string;
+
+  @Column({ nullable: true })
+  facultyId: number;
 
   @Column({ default: true })
   isActive: boolean;
@@ -36,6 +41,9 @@ export class Course {
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
+
+  @ManyToOne(() => Faculty, (faculty) => faculty.courses)
+  faculty: Faculty;
 
   @OneToMany(() => Student, (student) => student.course)
   students: Student[];
