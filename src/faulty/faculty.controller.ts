@@ -33,19 +33,7 @@ export class FacultyController {
     }
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get(':id')
-  findOne(@Param('id') id: number) {
-    try {
-      return this.facultyService.findById(id);
-    } catch (error: unknown) {
-      return {
-        isSuccessful: false,
-        message: 'Error fetching Faculty',
-        content: error instanceof Error ? error.message : String(error),
-      };
-    }
-  }
+  
 
   @UseGuards(JwtAuthGuard)
   @Post('Interact')
@@ -64,39 +52,57 @@ export class FacultyController {
     }
   }
 
-   @UseGuards(JwtAuthGuard)
-    @Patch('Interact/Update/:id')
-    async updateBatch(
-      @Param('id') id: number,
-      @Body() updateDTO: UpdateFacultyDTO,
-      @CurrentUser() currentUser: User,
-    ) {
-      try {
-        return this.facultyService.update(id, updateDTO, currentUser);
-      } catch (error: unknown) {
-        return {
-          isSuccessful: false,
-          message: 'Error updating Faculty',
-          content: error instanceof Error ? error.message : String(error),
-        };
-      }
+  @UseGuards(JwtAuthGuard)
+  @Patch('Interact/Update/:id')
+  async updateBatch(
+    @Param('id') id: number,
+    @Body() updateDTO: UpdateFacultyDTO,
+    @CurrentUser() currentUser: User,
+  ) {
+    try {
+      return this.facultyService.update(id, updateDTO, currentUser);
+    } catch (error: unknown) {
+      return {
+        isSuccessful: false,
+        message: 'Error updating Faculty',
+        content: error instanceof Error ? error.message : String(error),
+      };
     }
-  
-    @UseGuards(JwtAuthGuard)
-    @Patch('Interact/Update/:id/Status')
-    async updateBatchStatus(
-      @Param('id') id: number,
-      @Body() updateDTO: { status: boolean },
-      @CurrentUser() currentUser: User,
-    ) {
-      try {
-        return this.facultyService.updateStatus(id, updateDTO.status, currentUser);
-      } catch (error: unknown) {
-        return {
-          isSuccessful: false,
-          message: 'Error updating Faculty Status',
-          content: error instanceof Error ? error.message : String(error),
-        };
-      }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('Interact/Update/:id/Status')
+  async updateBatchStatus(
+    @Param('id') id: number,
+    @Body() updateDTO: { status: boolean },
+    @CurrentUser() currentUser: User,
+  ) {
+    try {
+      return this.facultyService.updateStatus(
+        id,
+        updateDTO.status,
+        currentUser,
+      );
+    } catch (error: unknown) {
+      return {
+        isSuccessful: false,
+        message: 'Error updating Faculty Status',
+        content: error instanceof Error ? error.message : String(error),
+      };
     }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  findOne(@Param('id') id: number) {
+    try {
+      return this.facultyService.findById(id);
+    } catch (error: unknown) {
+      return {
+        isSuccessful: false,
+        message: 'Error fetching Faculty',
+        content: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
 }

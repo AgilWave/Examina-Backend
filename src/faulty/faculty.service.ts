@@ -24,6 +24,8 @@ export class FacultyService {
     const existingFaculty = await this.facultyRepository.findOne({
       where: { name: createFacultyDTO.name },
     });
+
+    console.log('Existing faculty:', existingFaculty);
     if (existingFaculty) {
       return {
         isSuccessful: false,
