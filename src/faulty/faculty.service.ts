@@ -170,7 +170,6 @@ export class FacultyService {
           };
         }
 
-        // Check if the status is already the same
         if (faculty.isActive === isActive) {
           return {
             isSuccessful: false,
@@ -184,13 +183,15 @@ export class FacultyService {
         } else {
           faculty.updatedBy = 'System';
         }
+
+        faculty.isActive = isActive;
     
         const updatedfaculty = await this.facultyRepository.save(faculty);
     
         return {
           isSuccessful: true,
           message: `Faculty ${isActive ? 'activated' : 'deactivated'} successfully`,
-          content: null,
+          content: updatedfaculty,
         };
       }
   
