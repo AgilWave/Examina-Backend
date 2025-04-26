@@ -94,7 +94,7 @@ export class CourseService {
   }
 
   async findAll(filterDto: CourseFilterDto): Promise<ResponseList<Course>> {
-    const { page = 1, pageSize = 10, name, isActive } = filterDto;
+    const { page = 1, pageSize = 10, name, isActive, facultyId } = filterDto;
     const query = this.courseRepository.createQueryBuilder('course')
       .leftJoinAndSelect('course.modules', 'module')
       .select(['course', 'module.id', 'module.name']);
@@ -105,6 +105,10 @@ export class CourseService {
 
     if (isActive !== undefined) {
       query.andWhere('course.isActive = :isActive', { isActive });
+    }
+
+    if (facultyId) {
+      query.andWhere('course.facultyId = :facultyId', { facultyId });
     }
 
     const totalItems = await query.getCount();

@@ -9,4 +9,8 @@ export class CourseFilterDto extends PaginationDto {
   @IsOptional()
   @IsString()
   isActive?: boolean;
+
+  @IsOptional()
+  @IsString()
+  facultyId?: string;
 }
