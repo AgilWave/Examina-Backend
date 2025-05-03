@@ -10,12 +10,15 @@ import { FacultyModule } from './faulty/faculty.module';
 import { CourseModule } from './course/course.module';
 import { BatchModule } from './batch/batch.module';
 import { ModulesModule } from './modules/modules.module';
+import { QuestionModule } from './question-bank/question/question.module';
 import { Student } from './user/entities/student.entitiy';
 import { Faculty } from './faulty/entities/faculty.entitiy';
 import { Course } from './course/entities/course.entitiy';
 import { Batch } from './batch/entities/batch.entitiy';
 import { Lecture } from './user/entities/lecture.entitiy';
 import { Modules } from './modules/entities/modules.entitiy';
+import { Question } from './question-bank/question/entities/question.entitiy';
+import { AnswerOption } from './question-bank/question/entities/answer-option.entity';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -28,7 +31,17 @@ import { Modules } from './modules/entities/modules.entitiy';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [User, Student, Faculty, Course, Batch, Lecture, Modules],
+      entities: [
+        User,
+        Student,
+        Faculty,
+        Course,
+        Batch,
+        Lecture,
+        Modules,
+        Question,
+        AnswerOption,
+      ],
       synchronize: true,
       extra: {
         ssl:
@@ -41,6 +54,7 @@ import { Modules } from './modules/entities/modules.entitiy';
     CourseModule,
     BatchModule,
     ModulesModule,
+    QuestionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
