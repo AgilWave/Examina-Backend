@@ -117,7 +117,7 @@ export class QuestionsService {
       ]);
 
     if (name) {
-      query.andWhere('question.name ILIKE :name', { name: `%${name}%` });
+      query.andWhere('question.text ILIKE :name', { name: `%${name}%` });
     }
 
     if (moduleId) {
@@ -166,6 +166,28 @@ export class QuestionsService {
       message: 'Questions found',
       listContent: questions,
       paginationInfo,
+    };
+  }
+
+  async delete(id: number): Promise<ResponseContent<Question>> {
+    const question = await this.questionRepository.findOne({
+      where: { id },
+    });
+
+    if (!question) {
+      return {
+        isSuccessful: false,
+        message: 'Question not found',
+        content: null,
+      };
+    }
+
+    await this.questionRepository.delete(id);
+
+    return {
+      isSuccessful: true,
+      message: 'Question deleted successfully',
+      content: null,
     };
   }
 

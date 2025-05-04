@@ -6,6 +6,7 @@ import {
   Post,
   UseGuards,
   Query,
+  Delete,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { QuestionsService } from './question.service';
@@ -58,6 +59,20 @@ export class QuestionController {
       return {
         isSuccessful: false,
         message: 'Error creating Question',
+        content: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('Interact/:id')
+  async deleteQuestion(@Param('id') id: number) {
+    try {
+      return this.questionService.delete(id);
+    } catch (error: unknown) {
+      return {
+        isSuccessful: false,
+        message: 'Error deleting Question',
         content: error instanceof Error ? error.message : String(error),
       };
     }
