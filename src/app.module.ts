@@ -19,6 +19,13 @@ import { Lecture } from './user/entities/lecture.entitiy';
 import { Modules } from './modules/entities/modules.entitiy';
 import { Question } from './question-bank/question/entities/question.entitiy';
 import { AnswerOption } from './question-bank/question/entities/answer-option.entity';
+import { Exams } from './exams/entities/exams.entitiy';
+import { ExamParticipant } from './exams/entities/exam-participants.entity';
+import { ExamResource } from './exams/entities/exam-resources.entity';
+import { ExamAnswer } from './exams/entities/exam-answers.entity';
+import { ExamQuestion } from './exams/entities/examquestions.entity';
+import { ExamAnswerOption } from './exams/entities/answer-option.entity';
+import { ExamsModule } from './exams/exams.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -41,6 +48,12 @@ import { AnswerOption } from './question-bank/question/entities/answer-option.en
         Modules,
         Question,
         AnswerOption,
+        Exams,
+        ExamParticipant,
+        ExamResource,
+        ExamAnswer,
+        ExamQuestion,
+        ExamAnswerOption,
       ],
       synchronize: true,
       extra: {
@@ -55,6 +68,7 @@ import { AnswerOption } from './question-bank/question/entities/answer-option.en
     BatchModule,
     ModulesModule,
     QuestionModule,
+    ExamsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

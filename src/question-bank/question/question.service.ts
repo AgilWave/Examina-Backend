@@ -26,236 +26,271 @@ export class QuestionsService {
     createQuestionDTO: CreateQuestionBatchDto,
     currentUser?: User,
   ): Promise<ResponseContent<Question>> {
-    const existingQuestions = await this.questionRepository.find({
-      where: {
-        text: In(createQuestionDTO.questions.map((q) => q.text)),
-      },
-    });
-    if (existingQuestions.length > 0) {
-      return {
-        isSuccessful: false,
-        message: 'One or more questions already exist',
-        content: null,
-      };
-    }
-    const module = await this.moduleRepository.findOne({
-      where: { id: createQuestionDTO.moduleId },
-    });
-
-    if (!module) {
-      return {
-        isSuccessful: false,
-        message: 'Module not found',
-        content: null,
-      };
-    }
-
-    const createdQuestions: Question[] = [];
-
-    for (const q of createQuestionDTO.questions) {
-      const question = this.questionRepository.create({
-        text: q.text,
-        category: q.category,
-        type: q.type,
-        attachment: q.attachment,
-        module: module,
-        createdBy: currentUser ? currentUser.username : 'System',
-        answerOptions: q.answerOptions
-          ? q.answerOptions.map((opt) =>
-              this.answerOptionRepository.create({
-                text: opt.text,
-                clarification: opt.clarification,
-                isCorrect: opt.isCorrect,
-              }),
-            )
-          : [],
+    try {
+      const existingQuestions = await this.questionRepository.find({
+        where: {
+          text: In(createQuestionDTO.questions.map((q) => q.text)),
+        },
       });
-      await this.questionRepository.save(question);
-      createdQuestions.push(question);
-    }
+      if (existingQuestions.length > 0) {
+        return {
+          isSuccessful: false,
+          message: 'One or more questions already exist',
+          content: null,
+        };
+      }
+      const module = await this.moduleRepository.findOne({
+        where: { id: createQuestionDTO.moduleId },
+      });
 
-    return {
-      isSuccessful: true,
-      message: 'Questions created successfully',
-      content: createdQuestions,
-    };
+      if (!module) {
+        return {
+          isSuccessful: false,
+          message: 'Module not found',
+          content: null,
+        };
+      }
+
+      const createdQuestions: Question[] = [];
+
+      for (const q of createQuestionDTO.questions) {
+        const question = this.questionRepository.create({
+          text: q.text,
+          category: q.category,
+          type: q.type,
+          attachment: q.attachment,
+          module: module,
+          createdBy: currentUser ? currentUser.username : 'System',
+          answerOptions: q.answerOptions
+            ? q.answerOptions.map((opt) =>
+                this.answerOptionRepository.create({
+                  text: opt.text,
+                  clarification: opt.clarification,
+                  isCorrect: opt.isCorrect,
+                }),
+              )
+            : [],
+        });
+        await this.questionRepository.save(question);
+        createdQuestions.push(question);
+      }
+
+      return {
+        isSuccessful: true,
+        message: 'Questions created successfully',
+        content: createdQuestions,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        isSuccessful: false,
+        message: 'Error creating questions ' + (error as Error).message,
+        content: null,
+      };
+    }
   }
 
   async findById(id: number): Promise<ResponseContent<Question>> {
-    const question = await this.questionRepository.findOne({
-      where: { id },
-    });
+    try {
+      const question = await this.questionRepository.findOne({
+        where: { id },
+      });
 
-    if (!question) {
+      if (!question) {
+        return {
+          isSuccessful: false,
+          message: 'Question not found',
+          content: null,
+        };
+      }
+
+      return {
+        isSuccessful: true,
+        message: 'Question found',
+        content: question,
+      };
+    } catch (error) {
+      console.log(error);
       return {
         isSuccessful: false,
-        message: 'Question not found',
+        message: 'Error finding question ' + (error as Error).message,
         content: null,
       };
     }
-
-    return {
-      isSuccessful: true,
-      message: 'Question found',
-      content: question,
-    };
   }
 
   async findAll(filterDto: QuestionFilterDTO): Promise<ResponseList<Question>> {
-    const { page = 1, pageSize = 10, name, moduleId, createdBy } = filterDto;
-    const query = this.questionRepository
-      .createQueryBuilder('question')
-      .leftJoinAndSelect('question.module', 'module')
-      .leftJoinAndSelect('question.answerOptions', 'answerOptions')
-      .select([
-        'question',
-        'module.name',
-        'answerOptions.id',
-        'answerOptions.text',
-        'answerOptions.clarification',
-        'answerOptions.isCorrect',
-      ]);
+    try {
+      const { page = 1, pageSize = 10, name, moduleId, createdBy } = filterDto;
+      const query = this.questionRepository
+        .createQueryBuilder('question')
+        .leftJoinAndSelect('question.module', 'module')
+        .leftJoinAndSelect('question.answerOptions', 'answerOptions')
+        .select([
+          'question',
+          'module.name',
+          'answerOptions.id',
+          'answerOptions.text',
+          'answerOptions.clarification',
+          'answerOptions.isCorrect',
+        ]);
 
-    if (name) {
-      query.andWhere('question.text ILIKE :name', { name: `%${name}%` });
-    }
+      if (name) {
+        query.andWhere('question.text ILIKE :name', { name: `%${name}%` });
+      }
 
-    if (moduleId) {
-      query.andWhere('question.moduleId = :moduleId', { moduleId });
-    }
+      if (moduleId) {
+        query.andWhere('question.moduleId = :moduleId', { moduleId });
+      }
 
-    if (createdBy) {
-      query.andWhere('question.createdBy = :createdBy', { createdBy });
-    }
+      if (createdBy) {
+        query.andWhere('question.createdBy = :createdBy', { createdBy });
+      }
 
-    const totalItems = await query.getCount();
-    const totalPages = Math.ceil(totalItems / pageSize);
+      const totalItems = await query.getCount();
+      const totalPages = Math.ceil(totalItems / pageSize);
 
-    query
-      .skip((page - 1) * pageSize)
-      .take(pageSize)
-      .orderBy('question.createdAt', 'DESC');
+      query
+        .skip((page - 1) * pageSize)
+        .take(pageSize)
+        .orderBy('question.createdAt', 'DESC');
 
-    const questions = await query.getMany();
+      const questions = await query.getMany();
 
-    if (questions.length === 0) {
+      if (questions.length === 0) {
+        return {
+          isSuccessful: false,
+          message: 'No Questions found',
+          listContent: [],
+        };
+      }
+
+      questions.forEach((question) => {
+        if (!question.answerOptions || question.answerOptions.length === 0) {
+          question.answerOptions = null;
+        }
+      });
+
+      const paginationInfo: PaginationInfo = {
+        page,
+        pageSize,
+        totalItems,
+        totalPages,
+        nextPage: page < totalPages ? page + 1 : null,
+        prevPage: page > 1 ? page - 1 : null,
+      };
+
+      return {
+        isSuccessful: true,
+        message: 'Questions found',
+        listContent: questions,
+        paginationInfo,
+      };
+    } catch (error) {
+      console.log(error);
       return {
         isSuccessful: false,
-        message: 'No Questions found',
+        message: 'Error finding questions ' + (error as Error).message,
         listContent: [],
       };
     }
-
-    questions.forEach((question) => {
-      if (!question.answerOptions || question.answerOptions.length === 0) {
-        question.answerOptions = null;
-      }
-    });
-
-    const paginationInfo: PaginationInfo = {
-      page,
-      pageSize,
-      totalItems,
-      totalPages,
-      nextPage: page < totalPages ? page + 1 : null,
-      prevPage: page > 1 ? page - 1 : null,
-    };
-
-    return {
-      isSuccessful: true,
-      message: 'Questions found',
-      listContent: questions,
-      paginationInfo,
-    };
   }
-
   async delete(id: number): Promise<ResponseContent<Question>> {
-    const question = await this.questionRepository.findOne({
-      where: { id },
-    });
+    try {
+      const question = await this.questionRepository.findOne({
+        where: { id },
+      });
 
-    if (!question) {
+      if (!question) {
+        return {
+          isSuccessful: false,
+          message: 'Question not found',
+          content: null,
+        };
+      }
+
+      await this.questionRepository.delete(id);
+
+      return {
+        isSuccessful: true,
+        message: 'Question deleted successfully',
+        content: null,
+      };
+    } catch (error) {
+      console.log(error);
       return {
         isSuccessful: false,
-        message: 'Question not found',
+        message: 'Error deleting question ' + (error as Error).message,
         content: null,
       };
     }
 
-    await this.questionRepository.delete(id);
+    // async update(
+    //   id: number,
+    //   updateQuestionDto: UpdateQuestionsDTO,
+    //   currentUser?: User,
+    // ): Promise<ResponseContent<Questions>> {
+    //   const question = await this.questionRepository.findOne({
+    //     where: { id },
+    //   });
 
-    return {
-      isSuccessful: true,
-      message: 'Question deleted successfully',
-      content: null,
-    };
+    //   if (!question) {
+    //     return {
+    //       isSuccessful: false,
+    //       message: 'Question not found',
+    //       content: null,
+    //     };
+    //   }
+
+    //   const updatedQuestion = Object.assign(question, updateQuestionDto);
+
+    //   if (currentUser) {
+    //     updatedQuestion.updatedBy = currentUser.username;
+    //   } else {
+    //     updatedQuestion.updatedBy = 'System';
+    //   }
+
+    //   const savedQuestion = await this.questionRepository.save(updatedQuestion);
+
+    //   return {
+    //     isSuccessful: true,
+    //     message: 'Question updated successfully',
+    //     content: savedQuestion,
+    //   };
+    // }
+
+    // async updateStatus(
+    //   id: number,
+    //   isActive: boolean,
+    //   currentUser?: User,
+    // ): Promise<ResponseContent<Questions>> {
+    //   const question = await this.questionRepository.findOne({
+    //     where: { id },
+    //   });
+
+    //   if (!question) {
+    //     return {
+    //       isSuccessful: false,
+    //       message: 'Question not found',
+    //       content: null,
+    //     };
+    //   }
+
+    //   question.isActive = isActive;
+
+    //   if (currentUser) {
+    //     question.updatedBy = currentUser.username;
+    //   } else {
+    //     question.updatedBy = 'System';
+    //   }
+
+    //   const updatedquestion = await this.questionRepository.save(question);
+
+    //   return {
+    //     isSuccessful: true,
+    //     message: `Question ${isActive ? 'activated' : 'deactivated'} successfully`,
+    //     content: updatedquestion,
+    //   };
+    // }
   }
-
-  // async update(
-  //   id: number,
-  //   updateQuestionDto: UpdateQuestionsDTO,
-  //   currentUser?: User,
-  // ): Promise<ResponseContent<Questions>> {
-  //   const question = await this.questionRepository.findOne({
-  //     where: { id },
-  //   });
-
-  //   if (!question) {
-  //     return {
-  //       isSuccessful: false,
-  //       message: 'Question not found',
-  //       content: null,
-  //     };
-  //   }
-
-  //   const updatedQuestion = Object.assign(question, updateQuestionDto);
-
-  //   if (currentUser) {
-  //     updatedQuestion.updatedBy = currentUser.username;
-  //   } else {
-  //     updatedQuestion.updatedBy = 'System';
-  //   }
-
-  //   const savedQuestion = await this.questionRepository.save(updatedQuestion);
-
-  //   return {
-  //     isSuccessful: true,
-  //     message: 'Question updated successfully',
-  //     content: savedQuestion,
-  //   };
-  // }
-
-  // async updateStatus(
-  //   id: number,
-  //   isActive: boolean,
-  //   currentUser?: User,
-  // ): Promise<ResponseContent<Questions>> {
-  //   const question = await this.questionRepository.findOne({
-  //     where: { id },
-  //   });
-
-  //   if (!question) {
-  //     return {
-  //       isSuccessful: false,
-  //       message: 'Question not found',
-  //       content: null,
-  //     };
-  //   }
-
-  //   question.isActive = isActive;
-
-  //   if (currentUser) {
-  //     question.updatedBy = currentUser.username;
-  //   } else {
-  //     question.updatedBy = 'System';
-  //   }
-
-  //   const updatedquestion = await this.questionRepository.save(question);
-
-  //   return {
-  //     isSuccessful: true,
-  //     message: `Question ${isActive ? 'activated' : 'deactivated'} successfully`,
-  //     content: updatedquestion,
-  //   };
-  // }
 }

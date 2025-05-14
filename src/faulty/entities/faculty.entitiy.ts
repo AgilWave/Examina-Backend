@@ -3,6 +3,7 @@ import { Student } from '../../user/entities/student.entitiy';
 import { Lecture } from '../../user/entities/lecture.entitiy';
 import { Modules } from '../../modules/entities/modules.entitiy';
 import { Course } from '../../course/entities/course.entitiy';
+import { Exams } from 'src/exams/entities/exams.entitiy';
 @Entity('faculties')
 export class Faculty {
   @PrimaryGeneratedColumn()
