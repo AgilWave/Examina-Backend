@@ -8,6 +8,7 @@ import { ExamQuestion } from './entities/examquestions.entity';
 import { ExamAnswerOption } from './entities/answer-option.entity';
 import { ExamsService } from './exams.service';
 import { ExamsController } from './exams.controller';
+import { ExamStatusScheduler } from './cornSchedulers/exam-status.scheduler';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { ExamsController } from './exams.controller';
     ]),
   ],
   controllers: [ExamsController],
-  providers: [ExamsService],
+  providers: [ExamsService, ExamStatusScheduler],
   exports: [ExamsService],
 })
 export class ExamsModule {}

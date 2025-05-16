@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
@@ -61,6 +62,7 @@ import { ExamsModule } from './exams/exams.module';
           process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
       },
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
     UserModule,
     FacultyModule,
