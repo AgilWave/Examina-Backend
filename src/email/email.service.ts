@@ -12,7 +12,7 @@ export class EmailService {
   private resend: Resend;
 
   constructor() {
-    this.resend = new Resend('re_JCEg9mC4_3zNxrvt49XZ4CGQDMRkktEFA');
+    this.resend = new Resend(process.env.RESEND_API_KEY);
   }
 
   async sendExamNotification(
