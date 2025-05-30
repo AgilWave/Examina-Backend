@@ -9,6 +9,8 @@ import { ExamAnswerOption } from './entities/answer-option.entity';
 import { ExamsService } from './exams.service';
 import { ExamsController } from './exams.controller';
 import { ExamStatusScheduler } from './cornSchedulers/exam-status.scheduler';
+import { EmailModule } from '../email/email.module';
+import { Student } from '../user/entities/student.entitiy';
 
 @Module({
   imports: [
@@ -19,7 +21,9 @@ import { ExamStatusScheduler } from './cornSchedulers/exam-status.scheduler';
       ExamAnswer,
       ExamQuestion,
       ExamAnswerOption,
+      Student,
     ]),
+    EmailModule,
   ],
   controllers: [ExamsController],
   providers: [ExamsService, ExamStatusScheduler],

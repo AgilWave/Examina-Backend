@@ -30,7 +30,7 @@ export class ExamResource {
   duration: number;
 
   @Column({ nullable: true })
-  fileSize: number; 
+  fileSize: number;
 
   @CreateDateColumn()
   uploadedAt: Date;

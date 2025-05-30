@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import { Exams } from './exams.entitiy';
 import { Student } from '../../user/entities/student.entitiy';
-import { ExamQuestion } from './examquestions.entity'; // Assuming you already have an ExamQuestion entity
+import { ExamQuestion } from './examquestions.entity';
 
 @Entity('exam_answers')
 export class ExamAnswer {

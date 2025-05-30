@@ -9,12 +9,17 @@ import { CreateExamDTO } from './dto/exams.dto';
 import { User } from '../user/entities/user.entitiy';
 import { ResponseContent } from 'src/response-dtos/responseContent.dto';
 import { ExamQuestion } from './entities/examquestions.entity';
+import { EmailService } from '../email/email.service';
+import { Student } from '../user/entities/student.entitiy';
 
 @Injectable()
 export class ExamsService {
   constructor(
     @InjectRepository(Exams)
     private readonly examRepository: Repository<Exams>,
+    @InjectRepository(Student)
+    private readonly studentRepository: Repository<Student>,
+    private readonly emailService: EmailService,
   ) {}
 
   async create(
@@ -48,7 +53,15 @@ export class ExamsService {
 
     const newExam = this.examRepository.create({
       ...createExamDTO,
+      faculty: { id: createExamDTO.facultyId },
+      course: { id: createExamDTO.courseId },
+      batch: { id: createExamDTO.batchId },
+      module: { id: createExamDTO.moduleId },
+      lecture: { id: createExamDTO.lectureId },
       examQuestions: examQuestions,
+      startTime: new Date(createExamDTO.startTime),
+      endTime: new Date(createExamDTO.endTime),
+      examDate: new Date(createExamDTO.examDate),
     });
 
     if (currentUser) {
@@ -58,6 +71,29 @@ export class ExamsService {
     }
 
     const savedExam = await this.examRepository.save(newExam);
+
+    if (savedExam.notifyStudents) {
+      try {
+        const students = await this.studentRepository.find({
+          where: { batch: { id: savedExam.batch.id } },
+          relations: ['user'],
+        });
+
+        for (const student of students) {
+          if (student.user?.email) {
+            await this.emailService.sendExamNotification(student.user.email, {
+              examName: savedExam.examName,
+              examCode: savedExam.examCode,
+              batchCode: savedExam.batch.batchCode,
+              startTime: savedExam.startTime.toISOString(),
+              endTime: savedExam.endTime.toISOString(),
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error sending exam notifications:', error);
+      }
+    }
 
     return {
       isSuccessful: true,

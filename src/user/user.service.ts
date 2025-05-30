@@ -104,6 +104,9 @@ export class UserService {
 
     const query = this.userRepository
       .createQueryBuilder('user')
+      .leftJoinAndSelect('user.lecture', 'lecture')
+      .leftJoinAndSelect('lecture.faculties', 'faculties')
+      .leftJoinAndSelect('lecture.courses', 'courses')
       .select([
         'user.id',
         'user.email',
@@ -111,6 +114,9 @@ export class UserService {
         'user.isBlacklisted',
         'user.role',
         'user.createdAt',
+        'lecture',
+        'faculties',
+        'courses',
       ]);
 
     if (role === 'student') {
@@ -118,8 +124,6 @@ export class UserService {
         .leftJoin('user.student', 'student')
         .leftJoin('student.batch', 'batch')
         .addSelect(['student.id', 'batch.batchCode']);
-    } else if (role === 'lecturer') {
-      query.leftJoin('user.lecture', 'lecture').addSelect(['lecture.id']);
     }
 
     if (name) {

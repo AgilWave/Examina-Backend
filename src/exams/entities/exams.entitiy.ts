@@ -97,7 +97,10 @@ export class Exams {
   surroundingEnvironmentCheck: boolean;
 
   // Question Settings
-  @OneToMany(() => ExamQuestion, (eq) => eq.exam, { cascade: true, eager: true })
+  @OneToMany(() => ExamQuestion, (eq) => eq.exam, {
+    cascade: true,
+    eager: true,
+  })
   examQuestions: ExamQuestion[];
 
   // Notfication Settings
@@ -123,10 +126,16 @@ export class Exams {
   @Column({ default: false })
   isDeleted: boolean;
 
-  @OneToMany(() => ExamParticipant, (ep) => ep.exam, { cascade: true, eager: true })
+  @OneToMany(() => ExamParticipant, (ep) => ep.exam, {
+    cascade: true,
+    eager: true,
+  })
   examParticipants: ExamParticipant[];
 
-  @OneToMany(() => ExamResource, (er) => er.exam, { cascade: true, eager: true })
+  @OneToMany(() => ExamResource, (er) => er.exam, {
+    cascade: true,
+    eager: true,
+  })
   examResources: ExamResource[];
 
   @OneToMany(() => ExamAnswer, (ea) => ea.exam, { cascade: true, eager: true })

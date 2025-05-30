@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { Exams } from '../entities/exams.entitiy';
+import { toZonedTime } from 'date-fns-tz';
+import { addMinutes } from 'date-fns';
+
+const SRI_LANKA_TZ = 'Asia/Colombo';
 
 @Injectable()
 export class ExamStatusScheduler {
@@ -13,9 +17,13 @@ export class ExamStatusScheduler {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleExamStatusUpdate(): Promise<void> {
-    const now = new Date();
+    const now = toZonedTime(new Date(), SRI_LANKA_TZ);
 
-    const exams = await this.examRepo.find();
+    const exams = await this.examRepo.find({
+      where: {
+        status: Not('completed'),
+      },
+    });
 
     for (const exam of exams) {
       if (!exam.startTime || !exam.endTime) {
@@ -24,9 +32,10 @@ export class ExamStatusScheduler {
       if (exam.status === 'completed') {
         continue;
       }
-      const startTime = new Date(exam.startTime);
-      const endTime = new Date(exam.endTime);
-      const activeTime = new Date(startTime.getTime() - 10 * 60 * 1000);
+
+      const startTime = toZonedTime(new Date(exam.startTime), SRI_LANKA_TZ);
+      const endTime = toZonedTime(new Date(exam.endTime), SRI_LANKA_TZ);
+      const activeTime = addMinutes(startTime, -10);
 
       let newStatus = 'pending';
 

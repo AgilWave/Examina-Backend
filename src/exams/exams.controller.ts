@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Post,
-  UseGuards,
-  Query,
-  Body,
-  Patch,
-} from '@nestjs/common';
+import { Controller, Get, Post, UseGuards, Query, Body } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ExamsService } from './exams.service';
 import { ExamFilterDto } from './dto/filter.dto';
@@ -33,8 +24,6 @@ export class ExamsController {
     }
   }
 
-  
-
   @UseGuards(JwtAuthGuard)
   @Post('Interact')
   async createBatch(
@@ -51,5 +40,4 @@ export class ExamsController {
       };
     }
   }
-
 }
