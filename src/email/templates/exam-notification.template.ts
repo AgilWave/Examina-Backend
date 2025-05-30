@@ -19,7 +19,7 @@ function formatDateTime(isoString: string): string {
       minute: '2-digit',
       timeZoneName: 'short',
     };
-    return date.toLocaleDateString('en-US', options);
+    return date.toLocaleDateString('en-LK', options);
   } catch (error) {
     console.error('Error formatting date:', error);
     return isoString;
