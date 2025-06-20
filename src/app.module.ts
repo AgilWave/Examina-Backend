@@ -27,6 +27,7 @@ import { ExamAnswer } from './exams/entities/exam-answers.entity';
 import { ExamQuestion } from './exams/entities/examquestions.entity';
 import { ExamAnswerOption } from './exams/entities/answer-option.entity';
 import { ExamsModule } from './exams/exams.module';
+import { SignalingModule } from './signaling/signaling.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { ExamsModule } from './exams/exams.module';
     ModulesModule,
     QuestionModule,
     ExamsModule,
+    SignalingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

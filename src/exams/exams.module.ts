@@ -11,6 +11,7 @@ import { ExamsController } from './exams.controller';
 import { ExamStatusScheduler } from './cornSchedulers/exam-status.scheduler';
 import { EmailModule } from '../email/email.module';
 import { Student } from '../user/entities/student.entitiy';
+import { ExamGateway } from './gateway/exam.gateway';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { Student } from '../user/entities/student.entitiy';
     EmailModule,
   ],
   controllers: [ExamsController],
-  providers: [ExamsService, ExamStatusScheduler],
+  providers: [ExamsService, ExamStatusScheduler, ExamGateway],
   exports: [ExamsService],
 })
 export class ExamsModule {}
