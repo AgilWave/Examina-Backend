@@ -12,6 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
 import * as jwksClient from 'jwks-rsa';
 import * as jwt from 'jsonwebtoken';
+import { StudentService } from 'src/user/student.service';
 
 @Injectable()
 export class AuthService implements OnModuleInit, OnModuleDestroy {
@@ -22,6 +23,7 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
+    private readonly studentService: StudentService,
   ) {
     this.jwksClient = jwksClient({
       jwksUri: `https://login.microsoftonline.com/common/discovery/v2.0/keys`,
@@ -129,6 +131,19 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
         };
       }
 
+      let studentDetails: any = null;
+
+      if (user?.role === 'student') {
+        const student = await this.studentService.findByUserId(user.id);
+        if (student) {
+          studentDetails = {
+            studentId: student.studentId,
+            batchId: student.batchId,
+            courseId: student.courseId,
+          };
+        }
+      }
+
       const payload = {
         sub: user?.id,
         email: user?.email,
@@ -143,6 +158,7 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
           id: user?.id,
           email: user?.email,
           name: user?.name,
+          ...(studentDetails && { studentDetails }),
         },
       };
     } catch (error) {

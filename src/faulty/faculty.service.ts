@@ -6,7 +6,7 @@ import { ResponseList } from 'src/response-dtos/responseList.dto';
 import { PaginationInfo } from 'src/response-dtos/pagination-response.dto';
 import { FacultyFilterDto } from './dto/filter.dto';
 import { CreateFacultyDTO, UpdateFacultyDTO } from './dto/faculty.dto';
-import { User as CurrentUser } from '../user/user.decorator';
+// import { User as CurrentUser } from '../user/user.decorator';
 import { User } from '../user/entities/user.entitiy';
 import { ResponseContent } from 'src/response-dtos/responseContent.dto';
 
@@ -52,24 +52,24 @@ export class FacultyService {
   }
 
   async findById(id: number): Promise<ResponseContent<Faculty>> {
-      const faculty = await this.facultyRepository.findOne({
-        where: { id },
-      });
-  
-      if (!faculty) {
-        return {
-          isSuccessful: false,
-          message: 'Faculty not found',
-          content: null,
-        };
-      }
-  
+    const faculty = await this.facultyRepository.findOne({
+      where: { id },
+    });
+
+    if (!faculty) {
       return {
-        isSuccessful: true,
-        message: 'Faculty found',
-        content: faculty,
+        isSuccessful: false,
+        message: 'Faculty not found',
+        content: null,
       };
     }
+
+    return {
+      isSuccessful: true,
+      message: 'Faculty found',
+      content: faculty,
+    };
+  }
 
   async findAll(filterDto: FacultyFilterDto): Promise<ResponseList<Faculty>> {
     const { page = 1, pageSize = 10, name, isActive } = filterDto;
@@ -119,80 +119,78 @@ export class FacultyService {
   }
 
   async update(
-      id: number,
-      updateFacultyDto: UpdateFacultyDTO,
-      currentUser?: User,
-    ): Promise<ResponseContent<Faculty>> {
-      const faculty = await this.facultyRepository.findOne({
-        where: { id },
-      });
-  
-      if (!faculty) {
-        return {
-          isSuccessful: false,
-          message: 'Faculty not found',
-          content: null,
-        };
-      }
-  
-      const updatedFaculty = Object.assign(faculty, updateFacultyDto);
-  
-      if (currentUser) {
-        updatedFaculty.updatedBy = currentUser.username;
-      } else {
-        updatedFaculty.updatedBy = 'System';
-      }
-  
-      const savedFaculty = await this.facultyRepository.save(updatedFaculty);
-  
+    id: number,
+    updateFacultyDto: UpdateFacultyDTO,
+    currentUser?: User,
+  ): Promise<ResponseContent<Faculty>> {
+    const faculty = await this.facultyRepository.findOne({
+      where: { id },
+    });
+
+    if (!faculty) {
       return {
-        isSuccessful: true,
-        message: 'Faculty updated successfully',
-        content: savedFaculty,
+        isSuccessful: false,
+        message: 'Faculty not found',
+        content: null,
       };
     }
 
+    const updatedFaculty = Object.assign(faculty, updateFacultyDto);
 
-     async updateStatus(
-        id: number,
-        isActive: boolean,
-        currentUser?: User,
-      ): Promise<ResponseContent<Faculty>> {
-        const faculty = await this.facultyRepository.findOne({
-          where: { id },
-        });
-    
-        if (!faculty) {
-          return {
-            isSuccessful: false,
-            message: 'Faculty not found',
-            content: null,
-          };
-        }
+    if (currentUser) {
+      updatedFaculty.updatedBy = currentUser.username;
+    } else {
+      updatedFaculty.updatedBy = 'System';
+    }
 
-        if (faculty.isActive === isActive) {
-          return {
-            isSuccessful: false,
-            message: `Faculty is already ${isActive ? 'active' : 'inactive'}`,
-            content: null,
-          };
-        }
-        
-        if (currentUser) {
-          faculty.updatedBy = currentUser.username;
-        } else {
-          faculty.updatedBy = 'System';
-        }
+    const savedFaculty = await this.facultyRepository.save(updatedFaculty);
 
-        faculty.isActive = isActive;
-    
-        const updatedfaculty = await this.facultyRepository.save(faculty);
-    
-        return {
-          isSuccessful: true,
-          message: `Faculty ${isActive ? 'activated' : 'deactivated'} successfully`,
-          content: updatedfaculty,
-        };
-      }
-  
+    return {
+      isSuccessful: true,
+      message: 'Faculty updated successfully',
+      content: savedFaculty,
+    };
+  }
+
+  async updateStatus(
+    id: number,
+    isActive: boolean,
+    currentUser?: User,
+  ): Promise<ResponseContent<Faculty>> {
+    const faculty = await this.facultyRepository.findOne({
+      where: { id },
+    });
+
+    if (!faculty) {
+      return {
+        isSuccessful: false,
+        message: 'Faculty not found',
+        content: null,
+      };
+    }
+
+    if (faculty.isActive === isActive) {
+      return {
+        isSuccessful: false,
+        message: `Faculty is already ${isActive ? 'active' : 'inactive'}`,
+        content: null,
+      };
+    }
+
+    if (currentUser) {
+      faculty.updatedBy = currentUser.username;
+    } else {
+      faculty.updatedBy = 'System';
+    }
+
+    faculty.isActive = isActive;
+
+    const updatedfaculty = await this.facultyRepository.save(faculty);
+
+    return {
+      isSuccessful: true,
+      message: `Faculty ${isActive ? 'activated' : 'deactivated'} successfully`,
+      content: updatedfaculty,
+    };
+  }
 }

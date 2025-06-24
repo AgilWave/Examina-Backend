@@ -34,6 +34,37 @@ export class SignalingGateway
   private rooms: Map<string, ExamRoom> = new Map();
   private socketToRoom: Map<string, string> = new Map();
   private socketRoles: Map<string, 'admin' | 'student'> = new Map();
+  private socketToStudentId: Map<string, string> = new Map();
+  private socketToStudentName: Map<string, string> = new Map();
+
+  private updateStudentSocketId(
+    studentId: string,
+    newSocketId: string,
+    examId: string,
+  ) {
+    // Find the old socket ID for this studentId
+    let oldSocketId: string | undefined;
+    for (const [socketId, sId] of this.socketToStudentId.entries()) {
+      if (sId === studentId) {
+        oldSocketId = socketId;
+        break;
+      }
+    }
+    if (oldSocketId && oldSocketId !== newSocketId) {
+      // Remove old socket references
+      this.socketToRoom.delete(oldSocketId);
+      this.socketRoles.delete(oldSocketId);
+      this.socketToStudentId.delete(oldSocketId);
+      this.socketToStudentName.delete(oldSocketId);
+
+      // Remove from room
+      const room = this.rooms.get(examId);
+      if (room) {
+        room.students.delete(oldSocketId);
+        room.students.add(newSocketId);
+      }
+    }
+  }
 
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
@@ -52,13 +83,18 @@ export class SignalingGateway
           room.admin = undefined;
         } else {
           room.students.delete(client.id);
+          const studentId = this.socketToStudentId.get(client.id);
           // Notify admin that student left
           if (room.admin) {
-            this.server.to(room.admin).emit('user-left', { id: client.id });
+            this.server
+              .to(room.admin)
+              .emit('user-left', { id: client.id, studentId: studentId });
           }
           // Notify other students
           room.students.forEach((studentId) => {
-            this.server.to(studentId).emit('user-left', { id: client.id });
+            this.server
+              .to(studentId)
+              .emit('user-left', { id: client.id, studentId: studentId });
           });
         }
 
@@ -71,14 +107,21 @@ export class SignalingGateway
 
     this.socketToRoom.delete(client.id);
     this.socketRoles.delete(client.id);
+    this.socketToStudentId.delete(client.id);
   }
 
   @SubscribeMessage('join-exam')
   async handleJoinExam(
-    @MessageBody() data: { examId: string; role?: 'admin' | 'student' },
+    @MessageBody()
+    data: {
+      examId: string;
+      role?: 'admin' | 'student';
+      studentId?: string;
+      studentName?: string;
+    },
     @ConnectedSocket() client: Socket,
   ) {
-    const { examId, role = 'student' } = data;
+    const { examId, role = 'student', studentId, studentName } = data;
 
     console.log(`${role} ${client.id} joining exam ${examId}`);
 
@@ -92,9 +135,20 @@ export class SignalingGateway
       this.rooms.set(examId, room);
     }
 
+    // If student is rejoining, update their socket ID
+    if (role === 'student' && studentId) {
+      this.updateStudentSocketId(studentId, client.id, examId);
+    }
+
     // Store mappings
     this.socketToRoom.set(client.id, examId);
     this.socketRoles.set(client.id, role);
+    if (studentId) {
+      this.socketToStudentId.set(client.id, studentId);
+    }
+    if (studentName) {
+      this.socketToStudentName.set(client.id, studentName);
+    }
 
     // Join the socket.io room
     await client.join(examId);
@@ -105,11 +159,18 @@ export class SignalingGateway
       // Send existing students to admin
       const existingUsers = Array.from(room.students);
       if (existingUsers.length > 0) {
-        client.emit('existing-users', { users: existingUsers });
+        const usersWithStudentIds = existingUsers.map((socketId) => ({
+          id: socketId,
+          studentId: this.socketToStudentId.get(socketId),
+          studentName: this.socketToStudentName.get(socketId),
+        }));
+
+        client.emit('existing-users', { users: usersWithStudentIds });
+
         // Request media status from all students
-        existingUsers.forEach((studentId) => {
+        existingUsers.forEach((socketId) => {
           this.server
-            .to(studentId)
+            .to(socketId)
             .emit('request-media-status', { adminId: client.id });
         });
       }
@@ -118,7 +179,11 @@ export class SignalingGateway
 
       // Notify admin about new student
       if (room.admin) {
-        this.server.to(room.admin).emit('user-joined', { id: client.id });
+        this.server.to(room.admin).emit('user-joined', {
+          id: client.id,
+          studentId: this.socketToStudentId.get(client.id),
+          studentName: this.socketToStudentName.get(client.id),
+        });
       }
       // send admin id to student
       if (room.admin) {
@@ -136,7 +201,9 @@ export class SignalingGateway
 
       // Notify existing students about new student
       existingStudents.forEach((studentId) => {
-        this.server.to(studentId).emit('user-joined', { id: client.id });
+        this.server
+          .to(studentId)
+          .emit('user-joined', { id: client.id, studentId: studentId });
       });
     }
 
@@ -178,6 +245,8 @@ export class SignalingGateway
       from: data.from,
       message: data.message,
       participantId: data.participantId,
+      studentName: this.socketToStudentName.get(client.id),
+      studentId: this.socketToStudentId.get(client.id),
     });
   }
 
@@ -202,6 +271,18 @@ export class SignalingGateway
   ) {
     // Forward the request to the student
     this.server.to(data.to).emit('voice-connect-request', { from: client.id });
+  }
+
+  @SubscribeMessage('voice-signal')
+  handleVoiceSignal(
+    @MessageBody() data: { target: string; signalData: any },
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.server.to(data.target).emit('voice-signal', {
+      sender: client.id,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      signalData: data.signalData,
+    });
   }
 
   @SubscribeMessage('voice-disconnect')

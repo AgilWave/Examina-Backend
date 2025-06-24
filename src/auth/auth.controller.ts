@@ -10,11 +10,17 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { MicrosoftTokenDto } from './dto/microsoft-token.dto';
+import { AdminLoginDto } from './dto/admin-login.dto';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiBody } from '@nestjs/swagger';
 
+@ApiTags('Auth')
+@ApiBearerAuth()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @ApiOperation({ summary: 'Validate Microsoft token' })
   @Post('microsoft')
   async validateMicrosoftToken(@Body() tokenDto: MicrosoftTokenDto) {
     try {
@@ -42,6 +48,7 @@ export class AuthController {
     }
   }
 
+  @ApiOperation({ summary: 'Logout' })
   @Post('logout')
   async logout(@Req() request) {
     const authHeader = request.headers.authorization;
@@ -69,8 +76,10 @@ export class AuthController {
     }
   }
 
+  @ApiOperation({ summary: 'Admin login' })
   @Post('admin-login')
-  async adminLogin(@Body() body: { username: string; password: string }) {
+  @ApiBody({ type: AdminLoginDto })
+  async adminLogin(@Body() body: AdminLoginDto) {
     const { username, password } = body;
 
     if (!username || !password) {
