@@ -30,6 +30,12 @@ export class ExamParticipant {
   @CreateDateColumn()
   joinedAt: Date;
 
+  @Column({ default: false })
+  isSubmitted: boolean;
+
+  @CreateDateColumn()
+  submittedAt: string;
+
   @Column({ type: 'timestamp', nullable: true })
   disconnectedAt: Date;
 }

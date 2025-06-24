@@ -333,4 +333,31 @@ export class SignalingGateway
       });
     }
   }
+
+  @SubscribeMessage('session-security-violation')
+  handleSecurityViolation(
+    @MessageBody()
+    data: {
+      examId: string;
+      studentId: string;
+      violationType: string;
+      count: number;
+    },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const { examId, studentId, violationType, count } = data;
+    const room = this.rooms.get(examId);
+    console.log(
+      `Session security violation from ${studentId} in exam ${examId}: ${violationType} (count: ${count})`,
+    );
+    if (room && room.admin) {
+      console.log(`Sending student-security-violation to admin ${room.admin}`);
+      this.server.to(room.admin).emit('student-security-violation', {
+        studentId,
+        violationType,
+        count,
+        socketId: client.id,
+      });
+    }
+  }
 }

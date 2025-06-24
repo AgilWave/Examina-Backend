@@ -137,6 +137,7 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
         const student = await this.studentService.findByUserId(user.id);
         if (student) {
           studentDetails = {
+            id: student.id,
             studentId: student.studentId,
             batchId: student.batchId,
             courseId: student.courseId,

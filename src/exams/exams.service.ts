@@ -150,4 +150,24 @@ export class ExamsService {
       paginationInfo,
     };
   }
+
+  async findById(id: number): Promise<ResponseContent<Exams>> {
+    const exam = await this.examRepository.findOne({
+      where: { id },
+    });
+
+    if (!exam) {
+      return {
+        isSuccessful: false,
+        message: 'Exam not found',
+        content: null,
+      };
+    }
+
+    return {
+      isSuccessful: true,
+      message: 'Exam found',
+      content: exam,
+    };
+  }
 }

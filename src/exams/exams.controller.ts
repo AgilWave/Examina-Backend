@@ -1,4 +1,12 @@
-import { Controller, Get, Post, UseGuards, Query, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+  Query,
+  Body,
+  Param,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ExamsService } from './exams.service';
 import { ExamFilterDto } from './dto/filter.dto';
@@ -36,6 +44,21 @@ export class ExamsController {
       return {
         isSuccessful: false,
         message: 'Error creating Exams',
+        content: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
+
+  // get exambyId
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  getExamById(@Param('id') id: number) {
+    try {
+      return this.examService.findById(id);
+    } catch (error: unknown) {
+      return {
+        isSuccessful: false,
+        message: 'Error fetching Exam',
         content: error instanceof Error ? error.message : String(error),
       };
     }

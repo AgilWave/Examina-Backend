@@ -31,6 +31,8 @@ import { SignalingModule } from './signaling/signaling.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { EnvironmentCheckupModule } from './environment-checkup/environment-check.module';
 import { EnvironmentCheck } from './environment-checkup/entities/environment-check.entity';
+import { ExamParticipantModule } from './exam-participant/exam-participant.module';
+import { ExamAnswerModule } from './exam-answers/exam-answers.module';
 
 @Module({
   imports: [
@@ -80,6 +82,8 @@ import { EnvironmentCheck } from './environment-checkup/entities/environment-che
     SignalingModule,
     RealtimeModule,
     EnvironmentCheckupModule,
+    ExamParticipantModule,
+    ExamAnswerModule,
   ],
   controllers: [AppController],
   providers: [AppService],
