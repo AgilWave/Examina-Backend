@@ -17,9 +17,14 @@ interface ExamRoom {
 
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: [
+      'http://localhost:3000',
+      'https://examina.live',
+      'https://admin.examina.live',
+    ],
     methods: ['GET', 'POST'],
   },
+  transports: ['websocket'],
 })
 export class SignalingGateway
   implements OnGatewayConnection, OnGatewayDisconnect

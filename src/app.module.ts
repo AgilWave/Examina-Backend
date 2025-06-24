@@ -28,6 +28,9 @@ import { ExamQuestion } from './exams/entities/examquestions.entity';
 import { ExamAnswerOption } from './exams/entities/answer-option.entity';
 import { ExamsModule } from './exams/exams.module';
 import { SignalingModule } from './signaling/signaling.module';
+import { RealtimeModule } from './realtime/realtime.module';
+import { EnvironmentCheckupModule } from './environment-checkup/environment-check.module';
+import { EnvironmentCheck } from './environment-checkup/entities/environment-check.entity';
 
 @Module({
   imports: [
@@ -57,6 +60,7 @@ import { SignalingModule } from './signaling/signaling.module';
         ExamAnswer,
         ExamQuestion,
         ExamAnswerOption,
+        EnvironmentCheck,
       ],
       synchronize: true,
       extra: {
@@ -74,6 +78,8 @@ import { SignalingModule } from './signaling/signaling.module';
     QuestionModule,
     ExamsModule,
     SignalingModule,
+    RealtimeModule,
+    EnvironmentCheckupModule,
   ],
   controllers: [AppController],
   providers: [AppService],
