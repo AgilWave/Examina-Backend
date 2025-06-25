@@ -37,35 +37,6 @@ export class SignalingGateway
   private socketToStudentId: Map<string, string> = new Map();
   private socketToStudentName: Map<string, string> = new Map();
 
-  private updateStudentSocketId(
-    studentId: string,
-    newSocketId: string,
-    examId: string,
-  ) {
-    // Find the old socket ID for this studentId
-    let oldSocketId: string | undefined;
-    for (const [socketId, sId] of this.socketToStudentId.entries()) {
-      if (sId === studentId) {
-        oldSocketId = socketId;
-        break;
-      }
-    }
-    if (oldSocketId && oldSocketId !== newSocketId) {
-      // Remove old socket references
-      this.socketToRoom.delete(oldSocketId);
-      this.socketRoles.delete(oldSocketId);
-      this.socketToStudentId.delete(oldSocketId);
-      this.socketToStudentName.delete(oldSocketId);
-
-      // Remove from room
-      const room = this.rooms.get(examId);
-      if (room) {
-        room.students.delete(oldSocketId);
-        room.students.add(newSocketId);
-      }
-    }
-  }
-
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
   }
@@ -133,11 +104,6 @@ export class SignalingGateway
         students: new Set(),
       };
       this.rooms.set(examId, room);
-    }
-
-    // If student is rejoining, update their socket ID
-    if (role === 'student' && studentId) {
-      this.updateStudentSocketId(studentId, client.id, examId);
     }
 
     // Store mappings
