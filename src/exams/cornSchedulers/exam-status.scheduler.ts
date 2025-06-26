@@ -46,7 +46,7 @@ export class ExamStatusScheduler {
       let newStatus = 'pending';
 
       if (now >= endTime) {
-        newStatus = 'completed';
+        newStatus = 'active';
       } else if (now >= activeTime && now < startTime) {
         newStatus = 'active';
       } else if (now >= startTime) {
