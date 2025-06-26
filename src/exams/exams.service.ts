@@ -103,7 +103,8 @@ export class ExamsService {
   }
 
   async findAll(filterDto: ExamFilterDto): Promise<ResponseList<Exams>> {
-    const { page = 1, pageSize = 10, examName, status } = filterDto;
+    const { page = 1, pageSize = 10, examName, status, batchId } = filterDto;
+    console.log(filterDto);
     const query = this.examRepository.createQueryBuilder('exam');
 
     if (examName) {
@@ -114,6 +115,14 @@ export class ExamsService {
 
     if (status) {
       query.andWhere('exam.status = :status', { status });
+    } else {
+      query.andWhere('exam.status IN (:...statuses)', {
+        statuses: ['pending', 'active', 'ongoing'],
+      });
+    }
+
+    if (batchId) {
+      query.andWhere('exam.batchId = :batchId', { batchId });
     }
 
     const totalItems = await query.getCount();

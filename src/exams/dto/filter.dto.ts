@@ -9,4 +9,8 @@ export class ExamFilterDto extends PaginationDto {
   @IsOptional()
   @IsString()
   status?: string;
+
+  @IsOptional()
+  @IsString()
+  batchId?: string;
 }
