@@ -10,7 +10,7 @@ import {
 import { Student } from '../../user/entities/student.entitiy';
 import { Modules } from '../../modules/entities/modules.entitiy';
 import { Lecture } from '../../user/entities/lecture.entitiy';
-import { Faculty } from 'src/faulty/entities/faculty.entitiy';
+import { Faculty } from '../../faulty/entities/faculty.entitiy';
 import { ApiProperty } from '@nestjs/swagger';
 @Entity('courses')
 export class Course {
