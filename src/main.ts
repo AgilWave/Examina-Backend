@@ -8,10 +8,18 @@ import { Lecture } from './user/entities/lecture.entitiy';
 import { ResponseList } from './response-dtos/responseList.dto';
 import { ResponseContent } from './response-dtos/responseContent.dto';
 import { PaginationInfo } from './response-dtos/pagination-response.dto';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.enableCors();
+
+  // Serve static files from uploads directory
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+    prefix: '/uploads/',
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,

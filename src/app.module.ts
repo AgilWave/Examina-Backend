@@ -33,6 +33,9 @@ import { EnvironmentCheckupModule } from './environment-checkup/environment-chec
 import { EnvironmentCheck } from './environment-checkup/entities/environment-check.entity';
 import { ExamParticipantModule } from './exam-participant/exam-participant.module';
 import { ExamAnswerModule } from './exam-answers/exam-answers.module';
+import { ViolationsModule } from './violations/violations.module';
+import { ExamViolation } from './violations/entities/exam-violation.entity';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -63,6 +66,7 @@ import { ExamAnswerModule } from './exam-answers/exam-answers.module';
         ExamQuestion,
         ExamAnswerOption,
         EnvironmentCheck,
+        ExamViolation,
       ],
       synchronize: true,
       extra: {
@@ -84,6 +88,8 @@ import { ExamAnswerModule } from './exam-answers/exam-answers.module';
     EnvironmentCheckupModule,
     ExamParticipantModule,
     ExamAnswerModule,
+    ViolationsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

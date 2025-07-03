@@ -8,11 +8,19 @@ import {
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { mkdir, writeFile } from 'node:fs/promises';
+import * as path from 'path';
+import { ViolationsService } from '../violations/violations.service';
 
 interface ExamRoom {
   examId: string;
   admin?: string;
   students: Set<string>;
+}
+
+interface ViolationRecord {
+  timestamp: number;
+  count: number;
 }
 
 @WebSocketGateway({
@@ -31,11 +39,15 @@ export class SignalingGateway
 {
   @WebSocketServer() server: Server;
 
+  constructor(private readonly violationsService: ViolationsService) {}
+
   private rooms: Map<string, ExamRoom> = new Map();
   private socketToRoom: Map<string, string> = new Map();
   private socketRoles: Map<string, 'admin' | 'student'> = new Map();
   private socketToStudentId: Map<string, string> = new Map();
   private socketToStudentName: Map<string, string> = new Map();
+  // Track recent violations to prevent duplicates within 3 seconds
+  private recentViolations: Map<string, ViolationRecord> = new Map();
 
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
@@ -79,6 +91,26 @@ export class SignalingGateway
     this.socketToRoom.delete(client.id);
     this.socketRoles.delete(client.id);
     this.socketToStudentId.delete(client.id);
+  }
+
+  @SubscribeMessage('screen-signal')
+  handleScreenSignal(
+    @MessageBody() data: { target: string; signalData: any },
+    @ConnectedSocket() client: Socket,
+  ) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { target, signalData } = data;
+    console.log(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      `Screen signal from ${client.id} to ${target}: ${signalData.type}`,
+    );
+
+    // Forward the screen signal to the target
+    this.server.to(target).emit('screen-signal', {
+      sender: client.id,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      signalData,
+    });
   }
 
   @SubscribeMessage('join-exam')
@@ -262,16 +294,18 @@ export class SignalingGateway
 
   @SubscribeMessage('media-status')
   handleMediaStatus(
-    @MessageBody() data: { examId: string; webcam: boolean; mic: boolean },
+    @MessageBody()
+    data: { examId: string; webcam: boolean; mic: boolean; screen?: boolean },
     @ConnectedSocket() client: Socket,
   ) {
-    const { examId, webcam, mic } = data;
+    const { examId, webcam, mic, screen } = data;
     const room = this.rooms.get(examId);
     if (room && room.admin) {
       this.server.to(room.admin).emit('media-status', {
         sender: client.id,
         webcam,
         mic,
+        screen: screen ?? false,
         examId,
       });
     }
@@ -301,24 +335,181 @@ export class SignalingGateway
   }
 
   @SubscribeMessage('session-security-violation')
-  handleSecurityViolation(
+  async handleSecurityViolation(
     @MessageBody()
     data: {
       examId: string;
       studentId: string;
       violationType: string;
       count: number;
+      socketId: string;
+      timestamp?: number;
+      webcamScreenshot?: string;
+      screenScreenshot?: string;
     },
     @ConnectedSocket() client: Socket,
   ) {
-    const { examId, studentId, violationType, count } = data;
+    const {
+      examId,
+      studentId,
+      violationType,
+      count,
+      socketId,
+      timestamp,
+      webcamScreenshot,
+      screenScreenshot,
+    } = data;
+
+    // Create a unique key for this student and violation type
+    const violationKey = `${studentId}-${examId}-${violationType}`;
+    const currentTime = Date.now();
+    const threeSecondsAgo = currentTime - 3000; // 3 seconds in milliseconds
+
+    // Check if we have a recent violation of the same type
+    const recentViolation = this.recentViolations.get(violationKey);
+    if (recentViolation && recentViolation.timestamp > threeSecondsAgo) {
+      console.log(
+        `Ignoring duplicate ${violationType} violation from ${studentId} in exam ${examId} within 3-second window`,
+      );
+      return; // Skip this violation
+    }
+
+    this.recentViolations.set(violationKey, {
+      timestamp: currentTime,
+      count: count,
+    });
+
+    const fiveSecondsAgo = currentTime - 5000;
+    for (const [key, record] of this.recentViolations.entries()) {
+      if (record.timestamp < fiveSecondsAgo) {
+        this.recentViolations.delete(key);
+      }
+    }
+
     const room = this.rooms.get(examId);
     console.log(
       `Session security violation from ${studentId} in exam ${examId}: ${violationType} (count: ${count})`,
     );
+    let webCamPath = '';
+    let screenPath = '';
+
+    try {
+      // Get the current working directory and ensure uploads directory exists
+      const currentDir = process.cwd();
+
+      // Ensure path module is available
+      if (!path || typeof path.join !== 'function') {
+        throw new Error('Path module is not available');
+      }
+
+      const uploadsDir = path.join(currentDir, 'uploads', 'violations');
+
+      // Ensure the uploads directory exists
+      try {
+        await mkdir(uploadsDir, { recursive: true });
+      } catch (dirError) {
+        console.error('Error creating uploads directory:', dirError);
+        // Continue anyway, the specific subdirectories will be created later
+      }
+
+      if (webcamScreenshot) {
+        // Validate base64 format
+        if (!webcamScreenshot.includes(',')) {
+          console.warn(
+            'Invalid webcam screenshot format: missing base64 prefix',
+          );
+          return;
+        }
+
+        const webCamBuffer = Buffer.from(
+          webcamScreenshot.split(',')[1],
+          'base64',
+        );
+
+        // Use timestamp or fallback to current time
+        const screenshotTimestamp = timestamp || Date.now();
+
+        // Create the relative path for serving
+        webCamPath = `/uploads/violations/${examId}/${studentId}/webcam_${screenshotTimestamp}.jpg`;
+
+        // Create the full system path for saving
+        const webCamFullPath = path.join(
+          uploadsDir,
+          examId,
+          studentId,
+          `webcam_${screenshotTimestamp}.jpg`,
+        );
+
+        // Ensure directory exists
+        await mkdir(path.dirname(webCamFullPath), { recursive: true });
+        await writeFile(webCamFullPath, webCamBuffer);
+        // console.log(`Webcam screenshot saved to: ${webCamFullPath}`);
+      }
+
+      if (screenScreenshot) {
+        // Validate base64 format
+        if (!screenScreenshot.includes(',')) {
+          console.warn(
+            'Invalid screen screenshot format: missing base64 prefix',
+          );
+          return;
+        }
+
+        const screenBuffer = Buffer.from(
+          screenScreenshot.split(',')[1],
+          'base64',
+        );
+
+        // Use timestamp or fallback to current time
+        const screenshotTimestamp = timestamp || Date.now();
+
+        // Create the relative path for serving
+        screenPath = `/uploads/violations/${examId}/${studentId}/screen_${screenshotTimestamp}.jpg`;
+
+        // Create the full system path for saving
+        const screenFullPath = path.join(
+          uploadsDir,
+          examId,
+          studentId,
+          `screen_${screenshotTimestamp}.jpg`,
+        );
+
+        // Ensure directory exists
+        await mkdir(path.dirname(screenFullPath), { recursive: true });
+        await writeFile(screenFullPath, screenBuffer);
+        // console.log(`Screen screenshot saved to: ${screenFullPath}`);
+      }
+    } catch (error) {
+      console.error('Error saving violation screenshots:', error);
+      // Continue execution even if file saving fails
+    }
+
+    // Save violation to database
+    try {
+      await this.violationsService.create({
+        examId: examId,
+        studentId: studentId,
+        violationType: violationType,
+        count: count,
+        socketId: socketId,
+        violationTimestamp: timestamp
+          ? new Date(timestamp).toISOString()
+          : new Date().toISOString(),
+        webcamScreenshotPath: webCamPath || undefined,
+        screenScreenshotPath: screenPath || undefined,
+        description: `${violationType} violation (count: ${count})`,
+      });
+      console.log(
+        `Violation saved to database for student ${studentId} in exam ${examId}`,
+      );
+    } catch (dbError) {
+      console.error('Error saving violation to database:', dbError);
+      // Continue execution even if database save fails
+    }
+
     if (room && room.admin) {
-      console.log(`Sending student-security-violation to admin ${room.admin}`);
-      this.server.to(room.admin).emit('student-security-violation', {
+      // console.log(`Sending session-security-violation to admin ${room.admin}`);
+      this.server.to(room.admin).emit('session-security-violation', {
         studentId,
         violationType,
         count,
