@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { ResponseList } from 'src/response-dtos/responseList.dto';
+import { ResponseList } from '../../response-dtos/responseList.dto';
 import { ResponseContent } from '../../response-dtos/responseContent.dto';
-import { PaginationInfo } from 'src/response-dtos/pagination-response.dto';
+import { PaginationInfo } from '../../response-dtos/pagination-response.dto';
 import { QuestionFilterDTO } from './dto/filter.dto';
 import { User } from '../../user/entities/user.entitiy';
 import { Question } from './entities/question.entitiy';

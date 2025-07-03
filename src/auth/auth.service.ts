@@ -12,7 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
 import * as jwksClient from 'jwks-rsa';
 import * as jwt from 'jsonwebtoken';
-import { StudentService } from 'src/user/student.service';
+import { StudentService } from '../user/student.service';
 
 @Injectable()
 export class AuthService implements OnModuleInit, OnModuleDestroy {

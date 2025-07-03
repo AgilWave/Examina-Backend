@@ -5,12 +5,12 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
-import { ResponseContent } from 'src/response-dtos/responseContent.dto';
+import { ResponseContent } from '../response-dtos/responseContent.dto';
 import { Student } from '../user/entities/student.entitiy';
 import { ExamParticipant } from '../exams/entities/exam-participants.entity';
-import { Exams } from 'src/exams/entities/exams.entitiy';
-import { ExamAnswer } from 'src/exams/entities/exam-answers.entity';
-import { ExamQuestion } from 'src/exams/entities/examquestions.entity';
+import { Exams } from '../exams/entities/exams.entitiy';
+import { ExamAnswer } from '../exams/entities/exam-answers.entity';
+import { ExamQuestion } from '../exams/entities/examquestions.entity';
 
 export interface ExamAnswerSubmission {
   examId: number;

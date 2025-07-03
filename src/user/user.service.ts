@@ -10,7 +10,7 @@ import * as bcrypt from 'bcryptjs';
 import { UserFilterDto } from './dto/user-filter.dto';
 import { ResponseList } from '../response-dtos/responseList.dto';
 import { ResponseContent } from '../response-dtos/responseContent.dto';
-import { PaginationInfo } from 'src/response-dtos/pagination-response.dto';
+import { PaginationInfo } from '../response-dtos/pagination-response.dto';
 import { UpdateLectureDto } from './dto/lecure.dto';
 import { StudentService } from './student.service';
 import { UpdateStudentDto } from './dto/student.dto';

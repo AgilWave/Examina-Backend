@@ -2,8 +2,8 @@ import { Controller, Post, UseGuards, Body } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ExamAnswerSubmissionDto } from './dto/exam-answer-submission.dto';
 import { ExamAnswerService } from './exam-answers.service';
-import { ResponseContent } from 'src/response-dtos/responseContent.dto';
-import { ExamAnswer } from 'src/exams/entities/exam-answers.entity';
+import { ResponseContent } from '../response-dtos/responseContent.dto';
+import { ExamAnswer } from '../exams/entities/exam-answers.entity';
 
 @Controller('exam-answers')
 @UseGuards(JwtAuthGuard)

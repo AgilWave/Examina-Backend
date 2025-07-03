@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Faculty } from './entities/faculty.entitiy';
-import { ResponseList } from 'src/response-dtos/responseList.dto';
-import { PaginationInfo } from 'src/response-dtos/pagination-response.dto';
+import { ResponseList } from '../response-dtos/responseList.dto';
+import { PaginationInfo } from '../response-dtos/pagination-response.dto';
 import { FacultyFilterDto } from './dto/filter.dto';
 import { CreateFacultyDTO, UpdateFacultyDTO } from './dto/faculty.dto';
 // import { User as CurrentUser } from '../user/user.decorator';
 import { User } from '../user/entities/user.entitiy';
-import { ResponseContent } from 'src/response-dtos/responseContent.dto';
+import { ResponseContent } from '../response-dtos/responseContent.dto';
 
 @Injectable()
 export class FacultyService {

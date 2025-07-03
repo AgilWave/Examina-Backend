@@ -24,7 +24,7 @@ import {
   ApiOkResponse,
   ApiBadRequestResponse,
 } from '@nestjs/swagger';
-import { ResponseList } from 'src/response-dtos/responseList.dto';
+import { ResponseList } from '../response-dtos/responseList.dto';
 import { Faculty } from './entities/faculty.entitiy';
 
 @ApiTags('Faculty')

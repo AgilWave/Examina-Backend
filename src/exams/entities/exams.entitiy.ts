@@ -8,9 +8,9 @@ import {
 } from 'typeorm';
 import { Lecture } from '../../user/entities/lecture.entitiy';
 import { Modules } from '../../modules/entities/modules.entitiy';
-import { Batch } from 'src/batch/entities/batch.entitiy';
+import { Batch } from '../../batch/entities/batch.entitiy';
 import { Course } from '../../course/entities/course.entitiy';
-import { Faculty } from 'src/faulty/entities/faculty.entitiy';
+import { Faculty } from '../../faulty/entities/faculty.entitiy';
 import { ExamQuestion } from './examquestions.entity';
 import { ExamParticipant } from './exam-participants.entity';
 import { ExamResource } from './exam-resources.entity';

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ResponseContent } from 'src/response-dtos/responseContent.dto';
+import { ResponseContent } from '../response-dtos/responseContent.dto';
 import { ResponseList } from 'src/response-dtos/responseList.dto';
 import { Student } from '../user/entities/student.entitiy';
 import { ExamParticipant } from '../exams/entities/exam-participants.entity';

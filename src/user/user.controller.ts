@@ -30,7 +30,7 @@ import {
   ApiNotFoundResponse,
 } from '@nestjs/swagger';
 import { ApiBody } from '@nestjs/swagger';
-import { ResponseContent } from 'src/response-dtos/responseContent.dto';
+import { ResponseContent } from '../response-dtos/responseContent.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
