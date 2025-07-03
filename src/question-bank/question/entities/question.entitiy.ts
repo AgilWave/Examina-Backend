@@ -6,7 +6,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { AnswerOption } from './answer-option.entity';
-import { Modules } from 'src/modules/entities/modules.entitiy';
+import { Modules } from '../../../modules/entities/modules.entitiy';
 import { Optional } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 @Entity('question')
